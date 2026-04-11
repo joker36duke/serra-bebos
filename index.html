@@ -989,8 +989,8 @@
                 showModal(title, desc, "Próxima Mão", startSeringalGame);
             }
         }
-        // LÓGICA DE CARREGAMENTO - 12 SEGUNDOS
-        window.addEventListener('load', () => {
+                // LÓGICA DE CARREGAMENTO DA SPLASH SCREEN
+        window.addEventListener('DOMContentLoaded', () => {
             const bar = document.getElementById('loading-bar');
             const splash = document.getElementById('splash-screen');
             
@@ -999,14 +999,20 @@
                 if(bar) bar.style.width = '100%'; 
             }, 500);
 
-            // Remove a tela após 12 segundos
+            // Remove a tela e libera o jogo (Ajustado para 4 segundos)
             setTimeout(() => {
-                splash.classList.add('opacity-0');
-                setTimeout(() => { 
-                    splash.style.display = 'none'; 
-                }, 1000);
-            }, 12000);
+                if(splash) {
+                    splash.style.transition = 'opacity 1s ease'; // Garante o efeito suave
+                    splash.style.opacity = '0'; // Deixa transparente
+                    
+                    // Espera sumir e deleta a tela do caminho
+                    setTimeout(() => { 
+                        splash.classList.add('hidden'); 
+                    }, 1000);
+                }
+            }, 4000); // 4000 = 4 segundos (Se quiser 12s de novo, mude para 12000)
         });
+
 
     </script>
 </body>
