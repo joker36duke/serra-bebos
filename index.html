@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serra Bebos - Mesa do Seringal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;700;900&family=Great+Vibes&display=swap');
+
+        :root {
+            --gold: #b08d21;
+            --luxury-gold: #d4af37;
+            --luxury-blue: #0047ab;
+            --wine: #722f1b;
+            --bg-light: #fdfaf3;
+            --amazon-green: #2d5a27;
+            --clay: #a67c52;
+            --ink: #0a0a2e;
+            --wood-dark: #3d1f14;
+            --wood-light: #dcc8b1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: #2a2a2a;
+            overflow: hidden;
+            margin: 0;
+            user-select: none;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-signature { font-family: 'Great Vibes', cursive; }
+        
+        .text-luxury-blue { color: var(--luxury-blue) !important; }
+        .text-luxury-gold { color: var(--luxury-gold) !important; }
+        .text-clay { color: var(--clay); }
+        .text-wine { color: var(--wine); }
+        .text-amazon { color: var(--amazon-green); }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            background: var(--bg-light);
+        }
+
+        .hidden { display: none !important; }
+        .transparent { opacity: 0; pointer-events: none; transform: scale(1.02); }
+
+        .btn-main { 
+            border: 1px solid var(--luxury-gold); 
+            background: var(--amazon-green); 
+            color: white; 
+            padding: 14px 36px; 
+            border-radius: 2px; 
+            font-weight: bold; 
+            letter-spacing: 4px; 
+            transition: all 0.4s; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            z-index: 100;
+        }
+        .btn-main:hover { background: var(--wine); transform: translateY(-2px); box-shadow: 0 15px 40px rgba(114, 47, 27, 0.3); border-color: white; }
+
+        .luck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; z-index: 100; }
+        .luck-card { width: 70px; height: 100px; perspective: 1000px; cursor: pointer; transition: transform 0.3s ease; position: relative; }
+        .luck-card:hover { transform: translateY(-8px) scale(1.05); }
+
+        .luck-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .luck-card-inner.flipped { transform: rotateY(180deg); }
+        .luck-card-front, .luck-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+        .luck-card-back { background: var(--amazon-green); border: 2px solid var(--luxury-gold); color: var(--luxury-gold); font-size: 1.8rem; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .luck-card-front { background: #fff; transform: rotateY(180deg); overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        .footer-quote { margin-top: 2rem; color: var(--luxury-blue); font-size: 0.85rem; text-align: center; max-width: 280px; line-height: 1.6; opacity: 0.85; position: relative; font-style: italic; }
+        .footer-quote::before { content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 30px; height: 1px; background: var(--luxury-gold); opacity: 0.4; }
+
+        .wood-table { background: radial-gradient(circle at center, #f5ecd7 0%, #dcc8b1 100%); width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border: 12px solid var(--wood-dark); box-shadow: inset 0 0 100px rgba(0,0,0,0.1); }
+
+        .card-mesa { width: 68px; height: 98px; border-radius: 4px; background: #fff; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); position: relative; cursor: pointer; transition: transform 0.2s;}
+        .card-mesa:hover:not(.card-disabled):not(.card-back-style) { transform: translateY(-10px); z-index: 50; }
+        @media (min-width: 768px) { .card-mesa { width: 85px; height: 120px; padding: 7px; } }
+        
+        .card-red { color: #b91c1c; }
+        .card-black { color: #111; }
+        .card-back-style { background: var(--amazon-green); border: 2px solid var(--luxury-gold); color: var(--luxury-gold); cursor: default; }
+        .card-back-style:hover { transform: none; }
+
+        .score-ui { width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100; }
+        .player-name-luxury { font-family: 'Cinzel', serif; font-weight: 900; font-size: 0.7rem; letter-spacing: 2px; color: var(--luxury-blue); }
+
+        .serra-badge { background: var(--wine); color: var(--luxury-gold); padding: 2px 10px; font-size: 9px; font-weight: 900; letter-spacing: 2px; border: 1px solid var(--luxury-gold); font-family: 'Cinzel', serif; text-transform: uppercase; }
+
+        .deck-vaza-area { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; z-index: 20; }
+        .stack-container { position: relative; width: 130px; height: 140px; }
+        
+        .vira-pos { position: absolute; bottom: 5px; left: -15px; transform: rotate(90deg); z-index: 5; opacity: 0.9; }
+        .monte-pos { position: absolute; top: 0; left: 20px; z-index: 10; transform: rotate(-3deg); }
+
+        .deck-counter-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--luxury-blue); color: var(--luxury-gold); font-weight: 900; font-size: 11px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--luxury-gold); box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 25; }
+
+        .status-banner {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 5px 25px; font-family: 'Cinzel', serif; font-size: 9px; 
+            letter-spacing: 4px; border: 1px solid white; z-index: 110;
+            text-transform: uppercase; font-weight: 900;
+        }
+
+        .bisca-alert { 
+            background: var(--wine); color: var(--luxury-gold); 
+            border-color: var(--luxury-gold);
+            box-shadow: 0 0 20px rgba(114, 47, 27, 0.6);
+            animation: pulseFlash 1s infinite;
+        }
+
+        .trunfada-status { 
+            background: #b91c1c; color: white; 
+            box-shadow: 0 0 20px rgba(185, 28, 28, 0.5); 
+            animation: pulseFlash 1s infinite; 
+            transition: all 0.3s;
+        }
+
+        .trunfada-alert {
+            background: #ff0000 !important;
+            transform: translateX(-50%) scale(1.1) !important;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.9) !important;
+        }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+        .invalid-shake { animation: shake 0.4s; }
+
+        .card-disabled { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+
+        @keyframes pulseFlash { 0% { opacity: 0.7; transform: translateX(-50%) scale(1); } 50% { opacity: 1; transform: translateX(-50%) scale(1.05); } 100% { opacity: 0.7; transform: translateX(-50%) scale(1); } }
+
+        .card-winner-glow { animation: winnerPulse 1.5s infinite; z-index: 200; }
+        @keyframes winnerPulse { 0% { box-shadow: 0 0 0px var(--luxury-gold); } 50% { box-shadow: 0 0 30px var(--luxury-gold); } 100% { box-shadow: 0 0 0px var(--luxury-gold); } }
+
+        .played-card { animation: cardPop 0.4s forwards; }
+        @keyframes cardPop { from { opacity: 0; transform: scale(0.5) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .btn-popo { position: absolute; top: -65px; left: 50%; transform: translateX(-50%); background: var(--amazon-green); color: white; font-family: 'Cinzel'; font-size: 9px; padding: 10px 18px; border: 1px solid var(--luxury-gold); white-space: nowrap; z-index: 1000; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s;}
+
+        .modal-premium { background: var(--bg-light); border: 2px solid var(--luxury-gold); padding: 30px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+    <!-- TELA 1: INÍCIO -->
+    <div id="screen-start" class="screen">
+        <div class="text-center mb-12">
+            <h1 class="font-cinzel font-black uppercase tracking-[8px] text-wine text-4xl md:text-5xl whitespace-nowrap">Serra Bebos</h1>
+            <p class="text-clay font-cinzel tracking-[6px] text-[10px] mt-4 opacity-70 uppercase font-bold">MADE IN AMAZÔNIA</p>
+        </div>
+        <button onclick="navTo('screen-start', 'screen-luck', renderLuckGrid)" class="btn-main">ENTRAR NO JOGO</button>
+        <div class="absolute bottom-10 text-center opacity-90">
+            <span class="text-[8px] text-clay tracking-[4px] uppercase block mb-1">Mestre da Adega</span>
+            <div class="signature-text font-signature text-3xl text-luxury-blue">El Dionysos</div>
+        </div>
+    </div>
+
+    <!-- TELA 2: SORTEIO -->
+    <div id="screen-luck" class="screen hidden transparent">
+        <div class="text-center mb-8">
+            <h2 class="font-cinzel text-4xl font-black text-wine tracking-[4px] uppercase drop-shadow-md">A Sorte no Seringal</h2>
+            <div class="flex flex-col items-center mt-4">
+                <div class="w-12 h-[2px] bg-[#722f1b] opacity-40 mb-3"></div>
+                <p class="font-cinzel text-[#3d1f14] font-bold text-[10px] uppercase tracking-[6px] leading-relaxed max-w-[250px]">Quem virar a maior carta domina a mesa</p>
+            </div>
+        </div>
+        <div id="luck-grid" class="luck-grid"></div>
+        <div class="footer-quote">Nem todo 🍷 é proibido,<br>mas apenas um Sommelier conduz o banquete.</div>
+    </div>
+
+    <!-- TELA 3: RESULTADO SORTEIO -->
+    <div id="screen-result" class="screen hidden transparent">
+        <div class="bg-white p-12 border border-luxury-gold/20 text-center rounded-sm max-w-sm w-full shadow-2xl relative">
+            <p class="font-cinzel text-clay text-[9px] uppercase tracking-[6px] mb-6 opacity-70">O Baralho Falou</p>
+            <h2 id="final-status-text" class="text-4xl font-black font-cinzel mb-12 tracking-tighter"></h2>
+            <div class="space-y-6 mb-12">
+                <div class="flex justify-between items-center border-b border-luxury-gold/10 pb-4">
+                    <span class="font-cinzel text-[8px] text-luxury-blue uppercase tracking-[3px] font-bold">Dono da Mesa</span>
+                    <span id="label-dono" class="font-cinzel text-[11px] text-amazon font-black uppercase tracking-[2px]"></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-luxury-gold/10 pb-4">
+                    <span class="font-cinzel text-[8px] text-luxury-blue uppercase tracking-[3px] font-bold">No Serra</span>
+                    <span id="label-serra" class="font-cinzel text-[11px] text-wine font-black uppercase tracking-[2px]"></span>
+                </div>
+            </div>
+            <button onclick="navTo('screen-result', 'screen-battle', startSeringalGame)" class="btn-main w-full">ir para a mesa</button>
+        </div>
+    </div>
+
+    <!-- TELA 4: ARENA/MESA -->
+    <div id="screen-battle" class="screen hidden transparent">
+        <div class="wood-table">
+            <div id="bisca-alert" class="status-banner bisca-alert hidden">BISCA NA RODA!</div>
+            <div id="trunfada-ui" class="status-banner trunfada-status hidden">TRUNFADA ATIVA</div>
+            
+            <div class="score-ui">
+                <div class="flex flex-col">
+                    <span id="ui-role-p" class="player-name-luxury"></span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-cinzel text-[10px] font-black opacity-60">DAMIÃO:</span>
+                        <span id="score-p" class="text-2xl text-amazon font-black font-cinzel">0</span>
+                    </div>
+                    <div id="serras-container-p" class="hidden mt-2"><span id="serras-p" class="serra-badge">0/3</span></div>
+                </div>
+                <div class="flex flex-col items-end text-right">
+                    <span id="ui-role-e" class="player-name-luxury"></span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="score-e" class="text-2xl text-wine font-black font-cinzel">0</span>
+                        <span class="font-cinzel text-[10px] font-black opacity-60">PIRARUCOG:</span>
+                    </div>
+                    <div id="serras-container-e" class="hidden mt-2"><span id="serras-e" class="serra-badge">0/3</span></div>
+                </div>
+            </div>
+
+            <div id="enemy-hand-table" class="absolute top-20 left-1/2 -translate-x-1/2 flex gap-2 opacity-60 pointer-events-none"></div>
+
+            <div class="deck-vaza-area">
+                <div class="stack-container">
+                    <!-- Indicador fixo do trunfo para não esquecer após o Papô -->
+                    <div id="trump-indicator" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 bg-wine text-luxury-gold font-cinzel font-bold text-[8px] tracking-[2px] px-2 py-1 rounded border border-luxury-gold whitespace-nowrap z-30 shadow-md">
+                    </div>
+                    <button id="btn-popo" onclick="executarPopo()" class="btn-popo">PAPÔ</button>
+                    <div id="ui-vira" class="vira-pos card-mesa shadow-lg"></div>
+                    <div id="ui-monte" class="monte-pos card-mesa card-back-style shadow-2xl relative">
+                        <div class="flex flex-col items-center justify-center h-full w-full leading-none opacity-80">
+                            <span class="inline-block rotate-180 text-3xl mb-1">🍷</span>
+                            <span class="inline-block text-3xl">🍷</span>
+                        </div>
+                        <div id="deck-count-ui" class="deck-counter-badge"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow flex items-center justify-center relative pointer-events-none">
+                <!-- Estampa Circular no Centro da Mesa -->
+                <div id="battle-msg" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-25 flex items-center justify-center w-[200px] h-[200px] z-0">
+                    <svg viewBox="0 0 300 300" class="w-full h-full drop-shadow-md">
+                        <defs>
+                            <path id="topArc" d="M 20, 150 A 130,130 0 0,1 280,150" />
+                            <path id="bottomArc" d="M 20, 150 A 130,130 0 0,0 280,150" />
+                        </defs>
+                        <text class="font-cinzel font-black uppercase" fill="#b91c1c" font-size="30" letter-spacing="4">
+                            <textPath href="#topArc" startOffset="50%" text-anchor="middle">MESA DO SERRA</textPath>
+                        </text>
+                        <text class="font-cinzel font-black uppercase" fill="#b91c1c" font-size="30" letter-spacing="4">
+                            <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">MESA DO SERRA</textPath>
+                        </text>
+                    </svg>
+                </div>
+                
+                <!-- Feedback Visual da Vaza -->
+                <div id="trick-result-msg" class="hidden"></div>
+
+                <div class="flex flex-col items-center gap-6 z-10">
+                    <div id="played-e" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300"></div>
+                    <div id="played-p" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <div class="h-[160px] w-full bg-black/5 flex justify-center items-center gap-4 px-4 border-t border-wood-dark/20 pb-4 z-20">
+                <div id="ui-hand" class="flex gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE JOGO -->
+    <div id="game-modal" class="hidden fixed inset-0 z-[1000] bg-wood-dark/80 flex items-center justify-center p-8 transition-opacity">
+        <div class="modal-premium">
+            <p id="modal-subtitle" class="font-cinzel text-luxury-blue text-[10px] tracking-[6px] mb-4 uppercase font-bold">Veredito</p>
+            <h2 id="modal-title" class="text-4xl font-black font-cinzel mb-4 tracking-tighter"></h2>
+            <p id="modal-desc" class="text-zinc-600 mb-8 text-sm italic font-medium leading-relaxed"></p>
+            <div class="flex flex-col gap-4">
+                <button id="btn-continue" onclick="closeModal()" class="btn-main">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTES DO JOGO ---
+        const suits = ['Paus', 'Espadas', 'Copas', 'Ouros'];
+        const suitIcons = { 'Paus': '♣', 'Espadas': '♠', 'Copas': '♥', 'Ouros': '♦' };
+        
+        // Hierarquia padrão da Bisca/Sueca (do menor pro maior) - Baralho de 36 cartas
+        const rankMap = [
+            { id: '3', power: 0, pts: 0 }, { id: '4', power: 1, pts: 0 }, { id: '5', power: 2, pts: 0 },
+            { id: '6', power: 3, pts: 0 }, { id: 'Q', power: 4, pts: 2 }, { id: 'J', power: 5, pts: 3 },
+            { id: 'K', power: 6, pts: 4 }, { id: '7', power: 7, pts: 10 }, { id: 'A', power: 8, pts: 11 }
+        ];
+
+        // --- ESTADO DO JOGO ---
+        let state = {
+            deck: [], pHand: [], eHand: [], vira: null, trumpSuit: null,
+            pScore: 0, eScore: 0,
+            pSerraScore: 1, eSerraScore: 1, // Começa no 1/3
+            pTricksWon: 0, eTricksWon: 0, // Contador de vazas para a regra do capote
+            isDono: false, pTurn: true, canPlay: true, luckBusy: false,
+            pCard: null, eCard: null,
+            roundEndCallback: null,
+            isFirstTrick: true,
+            isBiscaNaRodaActive: false,
+            pPopoUsed: false,
+            ePopoUsed: false
+        };
+
+        // --- FUNÇÕES DE NAVEGAÇÃO E UI ---
+        function navTo(fromId, toId, cb) {
+            const f = document.getElementById(fromId);
+            const f2 = document.getElementById(toId);
+            f.classList.add('transparent');
+            setTimeout(() => {
+                f.classList.add('hidden'); f2.classList.remove('hidden');
+                setTimeout(() => { f2.classList.remove('transparent'); if(cb) cb(); }, 50);
+            }, 600);
+        }
+
+        function showModal(title, desc, btnText, callback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('btn-continue').innerText = btnText || "Continuar";
+            state.roundEndCallback = callback;
+        
