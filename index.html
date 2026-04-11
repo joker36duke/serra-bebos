@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
@@ -162,7 +161,6 @@
 </head>
 <body>
 
-    <!-- TELA 1: INÍCIO -->
     <div id="screen-start" class="screen">
         <div class="text-center mb-12">
             <h1 class="font-cinzel font-black uppercase tracking-[8px] text-wine text-4xl md:text-5xl whitespace-nowrap">Serra Bebos</h1>
@@ -175,7 +173,6 @@
         </div>
     </div>
 
-    <!-- TELA 2: SORTEIO -->
     <div id="screen-luck" class="screen hidden transparent">
         <div class="text-center mb-8">
             <h2 class="font-cinzel text-4xl font-black text-wine tracking-[4px] uppercase drop-shadow-md">A Sorte no Seringal</h2>
@@ -188,7 +185,6 @@
         <div class="footer-quote">Nem todo 🍷 é proibido,<br>mas apenas um Sommelier conduz o banquete.</div>
     </div>
 
-    <!-- TELA 3: RESULTADO SORTEIO -->
     <div id="screen-result" class="screen hidden transparent">
         <div class="bg-white p-12 border border-luxury-gold/20 text-center rounded-sm max-w-sm w-full shadow-2xl relative">
             <p class="font-cinzel text-clay text-[9px] uppercase tracking-[6px] mb-6 opacity-70">O Baralho Falou</p>
@@ -207,7 +203,6 @@
         </div>
     </div>
 
-    <!-- TELA 4: ARENA/MESA -->
     <div id="screen-battle" class="screen hidden transparent">
         <div class="wood-table">
             <div id="bisca-alert" class="status-banner bisca-alert hidden">BISCA NA RODA!</div>
@@ -236,7 +231,6 @@
 
             <div class="deck-vaza-area">
                 <div class="stack-container">
-                    <!-- Indicador fixo do trunfo para não esquecer após o Papô -->
                     <div id="trump-indicator" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 bg-wine text-luxury-gold font-cinzel font-bold text-[8px] tracking-[2px] px-2 py-1 rounded border border-luxury-gold whitespace-nowrap z-30 shadow-md">
                     </div>
                     <button id="btn-popo" onclick="executarPopo()" class="btn-popo">PAPÔ</button>
@@ -252,7 +246,6 @@
             </div>
 
             <div class="flex-grow flex items-center justify-center relative pointer-events-none">
-                <!-- Estampa Circular no Centro da Mesa -->
                 <div id="battle-msg" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-25 flex items-center justify-center w-[200px] h-[200px] z-0">
                     <svg viewBox="0 0 300 300" class="w-full h-full drop-shadow-md">
                         <defs>
@@ -268,7 +261,6 @@
                     </svg>
                 </div>
                 
-                <!-- Feedback Visual da Vaza -->
                 <div id="trick-result-msg" class="hidden"></div>
 
                 <div class="flex flex-col items-center gap-6 z-10">
@@ -283,7 +275,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE JOGO -->
     <div id="game-modal" class="hidden fixed inset-0 z-[1000] bg-wood-dark/80 flex items-center justify-center p-8 transition-opacity">
         <div class="modal-premium">
             <p id="modal-subtitle" class="font-cinzel text-luxury-blue text-[10px] tracking-[6px] mb-4 uppercase font-bold">Veredito</p>
@@ -338,4 +329,654 @@
             document.getElementById('modal-desc').innerText = desc;
             document.getElementById('btn-continue').innerText = btnText || "Continuar";
             state.roundEndCallback = callback;
-        
+            document.getElementById('game-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('game-modal').classList.add('hidden');
+            if (state.roundEndCallback) {
+                let cb = state.roundEndCallback;
+                state.roundEndCallback = null;
+                cb();
+            }
+        }
+
+        // --- LÓGICA DO BARALHO ---
+        function createFullDeck() {
+            let d = [];
+            suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
+            return d;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createCardUI(card, hidden = false, onClick = null) {
+            const div = document.createElement('div');
+            div.className = `card-mesa ${hidden ? 'card-back-style' : (card.suit === 'Copas' || card.suit === 'Ouros' ? 'card-red' : 'card-black')}`;
+            if (hidden) { 
+                div.innerHTML = `<div class="flex flex-col items-center justify-center h-full w-full leading-none opacity-80"><span class="inline-block rotate-180 text-3xl mb-1">🍷</span><span class="inline-block text-3xl">🍷</span></div>`; 
+            } else {
+                const icon = suitIcons[card.suit];
+                div.innerHTML = `
+                    <div class="flex justify-between items-start leading-none"><span class="text-xs font-black">${card.rank}</span><span class="text-[10px]">${icon}</span></div>
+                    <div class="text-center text-3xl my-auto">${icon}</div>
+                    <div class="flex justify-between items-end leading-none rotate-180"><span class="text-xs font-black">${card.rank}</span><span class="text-[10px]">${icon}</span></div>
+                `;
+            }
+            if (onClick) div.onclick = onClick;
+            return div;
+        }
+
+        // --- LÓGICA ESPECIAL DOS BEBOS ---
+        function isBebo(card, trumpSuit) {
+            if (card.rank === 'Q' && card.suit === 'Espadas') return true;
+            if (card.rank === '3' && card.suit === 'Paus') return true;
+            if (card.rank === 'A' && card.suit === 'Paus') return true;
+            if (trumpSuit === 'Paus' && card.rank === 'A' && card.suit === 'Espadas') return true;
+            return false;
+        }
+
+        function isTrumpOrBebo(card) {
+            if (!card) return false;
+            return card.suit === state.trumpSuit || isBebo(card, state.trumpSuit);
+        }
+
+        // --- TELA DE SORTEIO ---
+        function renderLuckGrid() {
+            state.luckBusy = false;
+            const grid = document.getElementById('luck-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const c = document.createElement('div');
+                c.className = 'luck-card';
+                c.innerHTML = `<div class="luck-card-inner"><div class="luck-card-back card-back-style"><div class="flex flex-col items-center justify-center h-full w-full leading-none opacity-80"><span class="inline-block rotate-180 text-3xl mb-1">🍷</span><span class="inline-block text-3xl">🍷</span></div></div><div class="luck-card-front"></div></div>`;
+                c.onclick = () => handleLuckChoice(c, i);
+                grid.appendChild(c);
+            }
+        }
+
+        function handleLuckChoice(el, idx) {
+            if (state.luckBusy) return;
+            state.luckBusy = true;
+            const luckDeck = createFullDeck(); shuffle(luckDeck);
+            
+            const cardP = luckDeck.pop(); 
+            const cardE = luckDeck.pop();
+            
+            const inner = el.querySelector('.luck-card-inner');
+            const front = el.querySelector('.luck-card-front');
+            front.innerHTML = ''; front.appendChild(createCardUI(cardP));
+            inner.classList.add('flipped');
+            
+            const all = document.querySelectorAll('.luck-card'); 
+            const eIdx = (idx + 4) % 8; // Escolha oposta para o inimigo
+
+            setTimeout(() => {
+                const eInner = all[eIdx].querySelector('.luck-card-inner');
+                const eFront = all[eIdx].querySelector('.luck-card-front');
+                eFront.innerHTML = ''; eFront.appendChild(createCardUI(cardE));
+                eInner.classList.add('flipped');
+                
+                setTimeout(() => {
+                    // Avaliação de força considerando a hierarquia correta dos Bebos
+                    function getSorteioPower(c) {
+                        if (c.rank === '3' && c.suit === 'Paus') return 100;    // Coringa (Maior de todos)
+                        if (c.rank === 'Q' && c.suit === 'Espadas') return 99; // Pé de Pinto (Segundo maior)
+                        if (c.rank === 'A' && c.suit === 'Paus') return 98;    // Terceiro Bebo
+                        return c.power;
+                    }
+
+                    let pPower = getSorteioPower(cardP);
+                    let ePower = getSorteioPower(cardE);
+
+                    // Nova Regra: Se der empate, o sorteio é refeito!
+                    if (pPower === ePower) {
+                        const luckTitle = document.querySelector('#screen-luck h2');
+                        const originalText = luckTitle.innerText;
+                        luckTitle.innerText = "EMPATE! NOVO SORTEIO";
+                        luckTitle.classList.add('text-amazon'); // Fica verde para destacar
+                        
+                        setTimeout(() => {
+                            luckTitle.innerText = originalText;
+                            luckTitle.classList.remove('text-amazon');
+                            renderLuckGrid(); // Limpa as cartas e libera para um novo clique
+                        }, 2000);
+                        return; // Interrompe para forçar a nova tirada
+                    }
+
+                    let pWins = pPower > ePower;
+                    
+                    state.isDono = pWins;
+                    state.pSerraScore = 1;
+                    state.eSerraScore = 1;
+                    
+                    document.getElementById('final-status-text').innerText = pWins ? "VOCÊ DOMINA" : "PIRARUCOG DOMINA";
+                    document.getElementById('final-status-text').className = `text-4xl font-black font-cinzel mb-12 tracking-tighter ${pWins ? 'text-amazon' : 'text-wine'}`;
+                    
+                    document.getElementById('label-dono').innerText = pWins ? "DAMIÃO" : "PIRARUCOG";
+                    document.getElementById('label-serra').innerText = pWins ? "PIRARUCOG" : "DAMIÃO";
+                    
+                    setTimeout(() => navTo('screen-luck', 'screen-result'), 1500);
+                }, 1200);
+            }, 800);
+        }
+
+        // --- INICIALIZAÇÃO DA MESA ---
+        function startSeringalGame() {
+            state.deck = createFullDeck();
+            shuffle(state.deck);
+            
+            // Distribuir 4 cartas
+            state.pHand = [state.deck.pop(), state.deck.pop(), state.deck.pop(), state.deck.pop()];
+            state.eHand = [state.deck.pop(), state.deck.pop(), state.deck.pop(), state.deck.pop()];
+            
+            // Definir o Vira e o Trunfo Inicial
+            state.vira = state.deck.pop();
+            state.deck.unshift(state.vira); // Coloca no fundo
+            state.trumpSuit = state.vira.suit; // O TRUNFO NUNCA MUDA
+            
+            // Indicador de Trunfo Fixo / Regra do Papô
+            const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
+            document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
+            document.getElementById('trump-indicator').classList.remove('hidden');
+            
+            // Setup visual do Vira e Monte
+            const uiVira = document.getElementById('ui-vira');
+            uiVira.classList.remove('hidden'); // <-- CORREÇÃO: Garante que o Vira reapareça em novas rodadas!
+            uiVira.innerHTML = '';
+            uiVira.appendChild(createCardUI(state.vira));
+            document.getElementById('ui-monte').classList.remove('hidden');
+            
+            state.pScore = 0;
+            state.eScore = 0;
+            state.pTricksWon = 0;
+            state.eTricksWon = 0;
+            state.pCard = null;
+            state.eCard = null;
+            state.isFirstTrick = true;
+            state.isBiscaNaRodaActive = false;
+            state.pPopoUsed = false;
+            state.ePopoUsed = false;
+
+            document.getElementById('bisca-alert').classList.add('hidden');
+            document.getElementById('trick-result-msg').classList.add('hidden');
+            
+            // Quem está "No Serra" joga primeiro
+            state.pTurn = !state.isDono;
+            state.canPlay = state.pTurn;
+            
+            updateArenaUI();
+            
+            if (!state.pTurn) {
+                setTimeout(enemyPlay, 1000);
+            }
+        }
+
+        // --- ATUALIZAÇÃO DA UI DA MESA ---
+        function updateArenaUI() {
+            // Pontuações
+            document.getElementById('score-p').innerText = state.pScore;
+            document.getElementById('score-e').innerText = state.eScore;
+            
+            // Atualiza quem é Dono e quem é Serra
+            document.getElementById('ui-role-p').innerText = state.isDono ? "DONO DA MESA" : "NO SERRA";
+            document.getElementById('ui-role-e').innerText = !state.isDono ? "DONO DA MESA" : "NO SERRA";
+
+            // Placar de Serras (Visível apenas para quem está "No Serra")
+            if (state.isDono) {
+                document.getElementById('serras-container-p').classList.add('hidden');
+                document.getElementById('serras-container-e').classList.remove('hidden');
+                document.getElementById('serras-e').innerText = `${state.eSerraScore}/3`;
+            } else {
+                document.getElementById('serras-container-e').classList.add('hidden');
+                document.getElementById('serras-container-p').classList.remove('hidden');
+                document.getElementById('serras-p').innerText = `${state.pSerraScore}/3`;
+            }
+
+            // Contador do deck e Vira
+            const countUI = document.getElementById('deck-count-ui');
+            countUI.innerText = state.deck.length;
+            if (state.deck.length === 0) {
+                document.getElementById('ui-monte').classList.add('hidden');
+                document.getElementById('ui-vira').classList.add('hidden');
+                document.getElementById('trump-indicator').classList.add('hidden');
+                document.getElementById('trunfada-ui').classList.remove('hidden');
+            } else {
+                document.getElementById('trunfada-ui').classList.add('hidden');
+            }
+
+            // Mão do Jogador
+            const uiHand = document.getElementById('ui-hand');
+            uiHand.innerHTML = '';
+            state.pHand.forEach((card, i) => {
+                const cUI = createCardUI(card, false, () => playPlayerCard(i));
+                if (!state.canPlay) {
+                    cUI.classList.add('card-disabled');
+                }
+                uiHand.appendChild(cUI);
+            });
+
+            // Mão do Inimigo (Verso)
+            const eHandUI = document.getElementById('enemy-hand-table');
+            eHandUI.innerHTML = '';
+            state.eHand.forEach(() => {
+                eHandUI.appendChild(createCardUI(null, true));
+            });
+            
+            // Atualizar o botão Papô (Abertura do Modo de Troca)
+            const btnPopo = document.getElementById('btn-popo');
+            if (state.deck.length > 0 && !state.pPopoUsed) {
+                const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
+                const reqSuit = state.trumpSuit;
+                const hasPopoCard = state.pHand.some(c => c.rank === reqRank && c.suit === reqSuit);
+                
+                if (hasPopoCard && state.canPlay) {
+                    btnPopo.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
+                    btnPopo.style.display = 'block';
+                    btnPopo.innerText = "PAPÔ";
+                    btnPopo.style.backgroundColor = 'var(--amazon-green)';
+                    btnPopo.classList.add('animate-pulse');
+                } else {
+                    btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
+                    btnPopo.classList.remove('animate-pulse');
+                    btnPopo.style.display = 'none';
+                }
+            } else {
+                btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
+                btnPopo.style.display = 'none';
+            }
+        }
+
+        // --- MECÂNICA DE JOGO ---
+        function executarPopo() {
+            if (state.deck.length === 0 || state.pPopoUsed) return;
+            
+            const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
+            const reqSuit = state.trumpSuit;
+            const cardIndex = state.pHand.findIndex(c => c.rank === reqRank && c.suit === reqSuit);
+            
+            if (cardIndex !== -1) {
+                // Troca a carta da mão com o Vira automaticamente
+                const oldVira = state.vira;
+                const newVira = state.pHand[cardIndex];
+                
+                state.pHand[cardIndex] = oldVira;
+                state.vira = newVira;
+                state.deck[0] = newVira; // Atualiza o fundo do baralho
+                
+                state.pPopoUsed = true;
+                
+                // Atualiza a interface do Vira
+                const uiVira = document.getElementById('ui-vira');
+                uiVira.innerHTML = '';
+                uiVira.appendChild(createCardUI(state.vira));
+                
+                updateArenaUI();
+            }
+        }
+
+        function playPlayerCard(index) {
+            if (!state.canPlay || !state.pHand[index]) return;
+
+            // Regra da Trunfada: Obrigatório responder com Trunfo/Bebo se tiver
+            if (state.deck.length === 0 && !state.pTurn && state.eCard && isTrumpOrBebo(state.eCard)) {
+                const hasTrumpOrBebo = state.pHand.some(isTrumpOrBebo);
+                if (hasTrumpOrBebo && !isTrumpOrBebo(state.pHand[index])) {
+                    // Feedback visual de bloqueio
+                    const cUI = document.getElementById('ui-hand').children[index];
+                    cUI.classList.remove('invalid-shake');
+                    void cUI.offsetWidth; // Trigger reflow
+                    cUI.classList.add('invalid-shake');
+                    
+                    const trunfadaUi = document.getElementById('trunfada-ui');
+                    trunfadaUi.innerText = "OBRIGATÓRIO JOGAR TRUNFO/BEBO!";
+                    trunfadaUi.classList.add('trunfada-alert');
+                    setTimeout(() => {
+                        trunfadaUi.classList.remove('trunfada-alert');
+                        trunfadaUi.innerText = "TRUNFADA ATIVA";
+                    }, 1500);
+                    
+                    return; // Impede a jogada
+                }
+            }
+
+            state.canPlay = false;
+            
+            state.pCard = state.pHand.splice(index, 1)[0];
+            
+            // Regra: Bisca na Roda (Primeira vaza da primeira rodada 1/3)
+            const activeSerraScore = state.isDono ? state.eSerraScore : state.pSerraScore;
+            if (!state.eCard && state.isFirstTrick && activeSerraScore === 1) {
+                if (state.pCard.rank === '7' || state.pCard.rank === 'A') {
+                    state.isBiscaNaRodaActive = true;
+                    document.getElementById('bisca-alert').classList.remove('hidden');
+                }
+            }
+            
+            const playedArea = document.getElementById('played-p');
+            playedArea.innerHTML = '';
+            const cUI = createCardUI(state.pCard);
+            cUI.classList.add('played-card');
+            playedArea.appendChild(cUI);
+            
+            updateArenaUI();
+
+            if (!state.pTurn) {
+                // Jogador respondeu, resolver vaza
+                setTimeout(resolveTrick, 800);
+            } else {
+                // Jogador liderou, turno do inimigo
+                setTimeout(enemyPlay, 1000);
+            }
+        }
+
+        function enemyPlay() {
+            if (state.eHand.length === 0) return;
+            
+            // IA do Inimigo: Tentar Papô Inteligente
+            if (state.deck.length > 0 && !state.ePopoUsed) {
+                const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
+                const reqSuit = state.trumpSuit;
+                const popoIdx = state.eHand.findIndex(c => c.rank === reqRank && c.suit === reqSuit);
+                
+                // Só faz o papô se o vira for no mínimo uma Q (power >= 4)
+                if (popoIdx !== -1 && state.vira.power >= 4) {
+                    const oldVira = state.vira;
+                    state.vira = state.eHand[popoIdx];
+                    state.eHand[popoIdx] = oldVira;
+                    state.deck[0] = state.vira; // Atualiza fundo
+                    state.ePopoUsed = true;
+                    
+                    const uiVira = document.getElementById('ui-vira');
+                    uiVira.innerHTML = '';
+                    uiVira.appendChild(createCardUI(state.vira));
+                }
+            }
+            
+            // IA Simples e Regra da Trunfada:
+            let validMoves = state.eHand.map((c, i) => i);
+            
+            // Se Trunfada ativa e o jogador liderou com Trunfo/Bebo, Inimigo DEVE responder com Trunfo/Bebo se tiver
+            if (state.deck.length === 0 && state.pCard && isTrumpOrBebo(state.pCard)) {
+                const trumpBeboMoves = validMoves.filter(i => isTrumpOrBebo(state.eHand[i]));
+                if (trumpBeboMoves.length > 0) {
+                    validMoves = trumpBeboMoves;
+                }
+            }
+
+            let chosenIndex = 0;
+            
+            if (state.pCard) {
+                // Inimigo respondendo
+                let winningValid = validMoves.filter(i => determineTrickWinner(state.pCard, state.eHand[i], true) === 'e');
+                
+                if (winningValid.length > 0) {
+                    // Jogar a carta vencedora de menor valor
+                    chosenIndex = winningValid.sort((a,b) => state.eHand[a].power - state.eHand[b].power)[0];
+                } else {
+                    // Jogar a pior carta dentro dos movimentos válidos
+                    chosenIndex = validMoves.sort((a,b) => state.eHand[a].power - state.eHand[b].power)[0];
+                }
+            } else {
+                // Inimigo liderando: jogar carta aleatória alta ou trunfo
+                chosenIndex = validMoves[Math.floor(Math.random() * validMoves.length)];
+            }
+
+            state.eCard = state.eHand.splice(chosenIndex, 1)[0];
+            
+            // Regra: Bisca na Roda (Primeira vaza da primeira rodada 1/3)
+            const activeSerraScore = state.isDono ? state.eSerraScore : state.pSerraScore;
+            if (!state.pCard && state.isFirstTrick && activeSerraScore === 1) {
+                if (state.eCard.rank === '7' || state.eCard.rank === 'A') {
+                    state.isBiscaNaRodaActive = true;
+                    document.getElementById('bisca-alert').classList.remove('hidden');
+                }
+            }
+            
+            const playedArea = document.getElementById('played-e');
+            playedArea.innerHTML = '';
+            const cUI = createCardUI(state.eCard);
+            cUI.classList.add('played-card');
+            playedArea.appendChild(cUI);
+            
+            updateArenaUI();
+
+            if (state.pTurn) {
+                // Inimigo respondeu, resolver vaza
+                setTimeout(resolveTrick, 800);
+            } else {
+                // Inimigo liderou, turno do jogador
+                state.canPlay = true;
+                updateArenaUI();
+            }
+        }
+
+        function determineTrickWinner(led, followed, playerLed) {
+            // 1. REGRA SUPREMA: O Ás do Trunfo vence absolutamente TUDO (até os Bebos!)
+            const ledIsAceOfTrump = (led.rank === 'A' && led.suit === state.trumpSuit);
+            const followedIsAceOfTrump = (followed.rank === 'A' && followed.suit === state.trumpSuit);
+
+            if (ledIsAceOfTrump) return playerLed ? 'p' : 'e';
+            if (followedIsAceOfTrump) return playerLed ? 'e' : 'p';
+
+            // 2. Regra Especial: Bisca na Roda
+            if (state.isBiscaNaRodaActive) {
+                // Se chegou aqui, significa que o Ás do Trunfo NÃO foi jogado (tratado acima).
+                // Logo, a Bisca na Roda (que liderou a vaza) é imbatível.
+                return playerLed ? 'p' : 'e';
+            }
+
+            // 3. Hierarquia dos Bebos
+            const b1 = isBebo(led, state.trumpSuit);
+            const b2 = isBebo(followed, state.trumpSuit);
+            
+            // Hierarquia absoluta dos Bebos quando ambos jogam um
+            function getBeboPower(c) {
+                if (c.rank === '3' && c.suit === 'Paus') return 100; // Coringa
+                if (c.rank === 'Q' && c.suit === 'Espadas') return 99; // Pé de Pinto
+                if (c.rank === 'A' && c.suit === 'Paus') return 98; // Terceiro Bebo
+                if (state.trumpSuit === 'Paus' && c.rank === 'A' && c.suit === 'Espadas') return 97; // Quarto Bebo (só se trunfo for paus)
+                return 0;
+            }
+
+            let ledWins = true;
+
+            if (b1 && b2) {
+                // Se os dois jogaram Bebo, vence quem tem o Bebo mais forte!
+                ledWins = getBeboPower(led) >= getBeboPower(followed);
+            } else if (b2) {
+                ledWins = false;
+            } else if (b1) {
+                ledWins = true;
+            } else if (followed.suit === state.trumpSuit && led.suit !== state.trumpSuit) {
+                ledWins = false;
+            } else if (followed.suit === led.suit) {
+                ledWins = led.power >= followed.power;
+            } else {
+                ledWins = true;
+            }
+
+            return playerLed ? (ledWins ? 'p' : 'e') : (ledWins ? 'e' : 'p');
+        }
+
+        function resolveTrick() {
+            const winner = determineTrickWinner(
+                state.pTurn ? state.pCard : state.eCard, 
+                state.pTurn ? state.eCard : state.pCard, 
+                state.pTurn
+            );
+
+            const trickPts = state.pCard.pts + state.eCard.pts;
+            
+            // Lógica de Feedback Visual e Animações
+            const wArea = document.getElementById(`played-${winner}`);
+            const lArea = document.getElementById(`played-${winner === 'p' ? 'e' : 'p'}`);
+            const trickMsg = document.getElementById('trick-result-msg');
+
+            // Animar sobreposição da carta vencedora
+            wArea.style.zIndex = "50";
+            lArea.style.zIndex = "10";
+
+            if (winner === 'p') {
+                wArea.firstChild.classList.add('card-winner-glow');
+                wArea.style.transform = "scale(1.1) translateY(-20px)";
+                lArea.style.transform = "scale(0.85) translateY(20px)";
+                lArea.style.opacity = "0.6";
+                
+                trickMsg.innerText = trickPts > 0 ? `VOCÊ LEVOU +${trickPts} PONTOS!` : `SUA VAZA!`;
+                trickMsg.className = "absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] bg-amazon-green text-luxury-gold font-cinzel font-black text-[12px] tracking-[3px] px-6 py-2 border border-luxury-gold rounded shadow-[0_0_20px_rgba(45,90,39,0.8)] pointer-events-none transition-all duration-300 transform scale-110";
+            } else {
+                wArea.firstChild.classList.add('card-winner-glow');
+                wArea.style.transform = "scale(1.1) translateY(20px)";
+                lArea.style.transform = "scale(0.85) translateY(-20px)";
+                lArea.style.opacity = "0.6";
+                
+                trickMsg.innerText = trickPts > 0 ? `PIRARUCOG LEVOU +${trickPts}` : `PIRARUCOG LEVOU`;
+                trickMsg.className = "absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] bg-wine text-luxury-gold font-cinzel font-black text-[12px] tracking-[3px] px-6 py-2 border border-luxury-gold rounded shadow-[0_0_20px_rgba(114,47,27,0.8)] pointer-events-none transition-all duration-300 transform scale-110";
+            }
+            
+            trickMsg.classList.remove('hidden');
+
+            // Timer extendido para dar tempo de curtir a vitória da vaza
+            setTimeout(() => {
+                if (winner === 'p') {
+                    state.pScore += trickPts;
+                    state.pTricksWon++;
+                } else {
+                    state.eScore += trickPts;
+                    state.eTricksWon++;
+                }
+
+                // Comprar cartas se o baralho não estiver vazio
+                if (state.deck.length > 0) {
+                    const card1 = state.deck.pop();
+                    const card2 = state.deck.length > 0 ? state.deck.pop() : null;
+                    
+                    if (winner === 'p') {
+                        state.pHand.push(card1);
+                        if (card2) state.eHand.push(card2);
+                    } else {
+                        state.eHand.push(card1);
+                        if (card2) state.pHand.push(card2);
+                    }
+                }
+
+                // Limpar mesa e resetar status da vaza
+                document.getElementById('played-p').innerHTML = '';
+                document.getElementById('played-p').style = ''; // Limpa as animações
+                document.getElementById('played-e').innerHTML = '';
+                document.getElementById('played-e').style = ''; // Limpa as animações
+                
+                trickMsg.classList.add('hidden');
+                document.getElementById('bisca-alert').classList.add('hidden');
+                
+                state.pCard = null;
+                state.eCard = null;
+                state.isFirstTrick = false;
+                state.isBiscaNaRodaActive = false;
+                
+                // Definir quem joga o próximo
+                state.pTurn = (winner === 'p');
+                
+                updateArenaUI();
+
+                // Checar fim de jogo - O jogo só acaba quando as mãos de ambos ficarem vazias
+                if (state.pHand.length === 0 && state.eHand.length === 0) {
+                    endRound();
+                } else {
+                    if (!state.pTurn) {
+                        setTimeout(enemyPlay, 800);
+                    } else {
+                        state.canPlay = true;
+                        updateArenaUI();
+                    }
+                }
+            }, 1800);
+        }
+
+        // --- FINALIZAÇÃO ---
+        function endRound(forcedWinner = null) {
+            let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
+            let title = pWon ? "Vitória de Damião" : "Pirarucog Venceu";
+            let desc = pWon 
+                ? `A experiência do Bebo falou mais alto! Você faturou ${state.pScore} pontos.`
+                : `A selva engoliu a mesa. Pirarucog levou a rodada com ${state.eScore} pontos. El Dionysos aguarda a revanche.`;
+
+            let matchOver = false;
+            let matchWinnerIsPlayer = false;
+            let matchEndReason = "";
+            let matchEndDesc = "";
+
+            // Lógica de "Sair do Serra" e Derrotas Instantâneas
+            if (pWon) {
+                if (state.isDono) {
+                    // Pirarucog está no Serra e perdeu
+                    if (state.eSerraScore === 1 && state.eTricksWon === 0) {
+                        // Derrota instantânea por não fazer vazas no 1/3
+                        matchOver = true;
+                        matchWinnerIsPlayer = true;
+                        matchEndReason = "7 SERRA!";
+                        matchEndDesc = "Pela Regra do 7, Pirarucog não fez nenhuma vaza na rodada 1/3 e sofreu derrota instantânea! O vinho El Dionysos é seu!";
+                    } else {
+                        state.eSerraScore++; // Pirarucog vai para o próximo nível do serra
+                        if (state.eSerraScore > 3) {
+                            matchOver = true;
+                            matchWinnerIsPlayer = true;
+                            matchEndReason = "DOMÍNIO TOTAL";
+                            matchEndDesc = "Pirarucog foi derrotado 3 vezes! SERRADO! O Seringal é seu!";
+                        }
+                    }
+                } else {
+                    // Damião ganha e sai do serra. Pirarucog entra.
+                    state.isDono = true;
+                    state.eSerraScore = 1;
+                    state.pSerraScore = 1;
+                }
+            } else {
+                if (!state.isDono) {
+                    // Damião está no Serra e perdeu
+                    if (state.pSerraScore === 1 && state.pTricksWon === 0) {
+                        // Derrota instantânea por não fazer vazas no 1/3
+                        matchOver = true;
+                        matchWinnerIsPlayer = false;
+                        matchEndReason = "7 SERRA!";
+                        matchEndDesc = "Pela Regra do 7, você não fez nenhuma vaza na rodada 1/3 e sofreu derrota instantânea! A selva tomou conta.";
+                    } else {
+                        state.pSerraScore++; // Damião vai para o próximo nível do serra
+                        if (state.pSerraScore > 3) {
+                            matchOver = true;
+                            matchWinnerIsPlayer = false;
+                            matchEndReason = "FIM DE JOGO";
+                            matchEndDesc = "Você foi derrotado 3 vezes na Serra. A selva tem um novo dono, e não é você.";
+                        }
+                    }
+                } else {
+                    // Pirarucog ganha e sai do serra. Damião entra.
+                    state.isDono = false;
+                    state.eSerraScore = 1;
+                    state.pSerraScore = 1;
+                }
+            }
+
+            updateArenaUI();
+
+            if (matchOver) {
+                showModal(
+                    matchEndReason, 
+                    matchEndDesc,
+                    "Voltar ao Início",
+                    () => { location.reload(); }
+                );
+            } else {
+                showModal(title, desc, "Próxima Mão", startSeringalGame);
+            }
+        }
+
+    </script>
+</body>
+</html>
