@@ -210,24 +210,12 @@
                         <img src="logoserrabebos.png" alt="Logo Serra Bebos" class="w-64 md:w-80 mb-12 animate-blink object-contain drop-shadow-xl">
 
             
-            <div class="w-full relative mt-8">
-                <!-- Fundo da barra ajustado e borda -->
-                <div class="w-full relative mt-8">
-
-    <!-- TEXTO ACIMA MAIS LEGÍVEL -->
-    <p class="text-wine font-cinzel tracking-[3px] text-[12px] md:text-[14px] mb-3 uppercase font-bold text-center">
-        MADE IN AMAZÔNIA
-    </p>
-
-    <!-- BARRA MAIS GROSSA -->
-    <div class="h-[14px] w-full bg-[#3d1f14]/30 rounded-full overflow-hidden border-2 border-[#d4af37]/50">
-        <div id="loading-fill" class="h-full bg-[#722f1b] transition-all duration-300"></div>
-    </div>
-
-    <!-- PORCENTAGEM -->
-    <p id="loading-text" class="text-luxury-blue font-cinzel text-[12px] mt-3 text-center font-bold tracking-[2px]">
-        0%
-    </p>
+            <div class="h-[6px] w-full bg-[#3d1f14]/20 rounded-full overflow-hidden border border-[#d4af37]/30">
+    <div class="h-full bg-[#722f1b] loading-bar-fill"></div>
+</div>
+<p class="text-clay font-cinzel tracking-[4px] text-[9px] mt-4 uppercase font-bold text-center w-full">
+    MADE IN AMAZÔNIA
+</p>
 
         </div>
     </div>
@@ -1108,28 +1096,7 @@
                 });
             }, 6000);
         });
-    <script>
-let progress = 0;
-const fill = document.getElementById("loading-fill");
-const text = document.getElementById("loading-text");
-
-const interval = setInterval(() => {
-    progress += Math.floor(Math.random() * 8) + 2; // crescimento variável
-
-    if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-
-        // troca de tela automática
-        setTimeout(() => {
-            navTo('screen-loader', 'screen-intro');
-        }, 500);
-    }
-
-    fill.style.width = progress + "%";
-    text.innerText = progress + "%";
-
-}, 120);
+    
 </script>
 </body>
 </html>
