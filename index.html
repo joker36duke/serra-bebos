@@ -163,6 +163,15 @@
         .animate-intro {
             animation: introFade 10s ease forwards;
         }
+        /* ANIMAÇÃO DE ROTAÇÃO LENTA E CONTÍNUA */
+        .animate-spin-slow {
+            animation: spin 8s linear infinite; /* 8 segundos por volta, movimento linear e infinito */
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
         @keyframes introFade {
             0% { opacity: 0; transform: scale(0.9); }
