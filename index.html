@@ -1108,7 +1108,29 @@
                 });
             }, 6000);
         });
-    </script>
+    <script>
+let progress = 0;
+const fill = document.getElementById("loading-fill");
+const text = document.getElementById("loading-text");
+
+const interval = setInterval(() => {
+    progress += Math.floor(Math.random() * 8) + 2; // crescimento variável
+
+    if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+
+        // troca de tela automática
+        setTimeout(() => {
+            navTo('screen-loader', 'screen-intro');
+        }, 500);
+    }
+
+    fill.style.width = progress + "%";
+    text.innerText = progress + "%";
+
+}, 120);
+</script>
 </body>
 </html>
 
