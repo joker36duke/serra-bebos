@@ -437,14 +437,14 @@
                 setTimeout(() => { f2.classList.remove('transparent'); if(cb) cb(); }, 50);
             }, 600);
         }
-                // --- FLUXO DE ENTRADA DO JOGO ---
+                        // --- FLUXO DE ENTRADA DO JOGO ---
         function startGameFlow() {
             // Sai da Tela Inicial e vai para a Adega Mística (Intro)
             navTo('screen-start', 'screen-intro', () => {
-                // Espera 4.5 segundos de suspense e vai para o Sorteio
+                // Tempo aumentado em 1/4 (de 4500 para 5625ms) para leitura do pergaminho
                 setTimeout(() => {
                     navTo('screen-intro', 'screen-luck', renderLuckGrid);
-                }, 4500);
+                }, 5625);
             });
         }
         
