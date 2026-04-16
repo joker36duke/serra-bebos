@@ -1153,6 +1153,15 @@
             }
         }
 
+                // --- FUNÇÃO PARA TOCAR SOM DOS BOTÕES ---
+        function tocarSomBotao() {
+            let som = document.getElementById('som-botoes');
+            if (som) {
+                som.currentTime = 0; // Volta o som para o início (caso o jogador clique rápido duas vezes)
+                som.play().catch(e => console.log("Áudio bloqueado ou não encontrado"));
+            }
+        }
+        
     </script>
 </body>
 </html>
