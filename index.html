@@ -1118,10 +1118,10 @@
             }
         }
 
-                                // --- ATIVAÇÃO DO LOADER PARA A TELA INICIAL ---
+                             // --- ATIVAÇÃO DO LOADER PARA A TELA INICIAL ---
         window.addEventListener("load", () => {
             
-            // Lógica da contagem de 0% a 100%
+            // 1. Lógica da contagem de 0% a 100%
             let percent = 0;
             const percentText = document.getElementById('loading-percentage');
             const countInterval = setInterval(() => {
@@ -1130,9 +1130,30 @@
                 if (percent >= 100) clearInterval(countInterval);
             }, 58); 
 
-            // A tela de carregamento (loader) sai após 6 segundos e vai DIRETO para o Castelo
+            // 2. MÁGICA DO ÁUDIO: Liberta o som no primeiro toque no ecrã
+            document.body.addEventListener('click', function() {
+                let som = document.getElementById('som-passaro');
+                if (som && som.paused) {
+                    som.play().catch(err => console.log("Aguardando toque para iniciar áudio"));
+                }
+            }, { once: true });
+
+            // 3. FIM DO CARREGAMENTO E TRANSIÇÃO (após 6 segundos)
             setTimeout(() => {
-                navTo('screen-loader', 'screen-start');
+                // Silencia a floresta antes de abrir o jogo
+                let som = document.getElementById('som-passaro');
+                if (som) {
+                    som.pause();
+                }
+
+                // Troca segura de ecrãs (evita o ecrã branco)
+                try {
+                    navTo('screen-loader', 'screen-start');
+                } catch (e) {
+                    // Se a função navTo falhar, o código faz a troca manualmente por segurança!
+                    document.getElementById('screen-loader').classList.add('hidden', 'transparent');
+                    document.getElementById('screen-start').classList.remove('hidden', 'transparent');
+                }
             }, 6000);
         });
 
