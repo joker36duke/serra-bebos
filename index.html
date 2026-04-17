@@ -214,9 +214,11 @@
 <body>
 
     <!-- TELA DE CARREGAMENTO (LOADER) -->
-                  <body><div id="screen-loader" class="screen relative overflow-hidden h-full w-full">
-                              <audio id="som-passaro" src="cricrio.mp3" loop></audio>
-                              <script>
+                      <div id="screen-loader" class="screen relative overflow-hidden h-full w-full">
+        
+        <audio id="som-passaro" src="cricrio.mp3"></audio>
+        
+        <script>
             // 1. Contador de 0% a 100%
             let percent = 0;
             let countInterval = setInterval(() => {
@@ -226,21 +228,33 @@
                 if (percent >= 100) clearInterval(countInterval);
             }, 58);
 
+            // Controle de repetição do cricrió
+            let somPassaro = document.getElementById('som-passaro');
+            let repeticoes = 0;
+            
+            if (somPassaro) {
+                somPassaro.addEventListener('ended', function() {
+                    repeticoes++;
+                    // Agora repete até 6 vezes, MESMO que a tela já tenha mudado!
+                    if (repeticoes < 6) {
+                        somPassaro.currentTime = 0;
+                        somPassaro.play().catch(() => {});
+                    }
+                });
+            }
+
             // 2. Tocar som no primeiro toque na tela
             document.addEventListener('click', function() {
-                let som = document.getElementById('som-passaro');
-                if (som && som.paused) {
-                    som.play().catch(() => {});
+                // Só dá o play inicial se ainda não começou a cantar
+                if (somPassaro && somPassaro.paused && repeticoes === 0) {
+                    somPassaro.play().catch(() => {});
                 }
             }, { once: true });
 
-                        // 3. Transição de tela forçada e garantida (aos 6 segundos)
+            // 3. Transição de tela forçada e garantida (aos 6 segundos)
             setTimeout(() => {
-                let som = document.getElementById('som-passaro');
-                if (som) {
-                    som.pause(); // Cala o cricrió
-                    som.currentTime = 0; // Zera o áudio para ter certeza que não vai vazar
-                }
+                // REMOVEMOS O CORTE DE ÁUDIO DAQUI!
+                // O pássaro vai continuar cantando livremente de fundo.
 
                 // Esconde o seringal à força
                 document.getElementById('screen-loader').classList.add('hidden', 'transparent');
