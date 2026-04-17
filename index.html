@@ -234,10 +234,13 @@
                 }
             }, { once: true });
 
-            // 3. Transição de tela forçada e garantida (aos 6 segundos)
+                        // 3. Transição de tela forçada e garantida (aos 6 segundos)
             setTimeout(() => {
                 let som = document.getElementById('som-passaro');
-                if (som) som.pause(); // Cala o cricrió
+                if (som) {
+                    som.pause(); // Cala o cricrió
+                    som.currentTime = 0; // Zera o áudio para ter certeza que não vai vazar
+                }
 
                 // Esconde o seringal à força
                 document.getElementById('screen-loader').classList.add('hidden', 'transparent');
