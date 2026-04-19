@@ -293,31 +293,39 @@
         
         <div class="absolute inset-0 bg-black/30 z-10"></div> 
 
-        <div class="absolute top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-full flex justify-center px-6 pointer-events-none">
-            <img src="logoserrabebos.png" alt="Logo SerraBebos" class="w-64 md:w-80 animate-blink object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
-        </div>
+    <div id="screen-loader" class="screen relative overflow-hidden h-full w-full">
+        
+        <img src="fundoseringal.png" alt="Seringal Amazônico" class="absolute inset-0 w-full h-full object-cover z-0">
+        <div class="absolute inset-0 bg-black/40 z-10"></div> <img src="seta_pisca.png" 
+             alt="seta piscante" 
+             class="absolute w-[20px] h-[20px] z-20 blink-fast"
+             style="right: 15%; top: 38.5%;">
 
-        <div class="absolute bottom-8 left-0 w-full flex flex-col items-center z-30 px-8">
-            <div class="w-full max-w-sm relative">
-                <div class="flex justify-between items-end mb-2 px-2">
-                    <span class="text-white/90 font-cinzel text-xs font-bold tracking-[2px] uppercase drop-shadow-md">Iniciando</span>
-                    <span id="loading-percentage" class="text-white font-black text-lg drop-shadow-md">0%</span>
-                </div>
-
-                <div class="h-4 w-full bg-black/60 rounded-full overflow-hidden border border-luxury-gold shadow-inner backdrop-blur-sm">
-                    <div class="h-full bg-wine loading-bar-fill shadow-[0_0_15px_rgba(212,175,55,0.8)]"></div>
-                </div>
+        <div class="flex flex-col items-center justify-center w-full h-full relative z-30 px-6">
+            <div class="w-full max-w-sm flex flex-col items-center">
+                <img src="logoserrabebos.png" alt="Logo SerraBebos" class="w-64 md:w-80 mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
                 
-                <p class="text-white/80 tracking-[4px] text-[9px] md:text-xs mt-4 uppercase font-black text-center w-full drop-shadow-lg">
-                    MADE IN ADELINO'S GARDEN
-                </p>
+                <div class="w-full relative">
+                    <div class="flex justify-between items-end mb-2 px-2">
+                        <span class="text-white/80 font-cinzel text-xs font-bold tracking-[2px] uppercase">Buscando o Veredito...</span>
+                        <span id="loading-percentage" class="text-white font-black text-xl drop-shadow-md">0%</span>
+                    </div>
+
+                    <div class="h-6 w-full bg-black/30 rounded-full overflow-hidden border-2 border-luxury-gold shadow-inner">
+                        <div class="h-full bg-wine loading-bar-fill shadow-[0_0_15px_rgba(212,175,55,0.8)]"></div>
+                    </div>
+                    
+                    <p class="text-white tracking-[4px] text-sm md:text-base mt-4 uppercase font-black text-center w-full drop-shadow-lg">
+                        MADE IN ADELINO'S GARDEN
+                    </p>
+                </div>
             </div>
         </div>
 
         <audio id="som-passaro" src="cricrio.mp3"></audio>
         
         <script>
-            // Contador de 0% a 100%
+            // 1. Contador de 0% a 100%
             let percent = 0;
             let countInterval = setInterval(() => {
                 percent++;
@@ -326,7 +334,7 @@
                 if (percent >= 100) clearInterval(countInterval);
             }, 58);
 
-            // Controle de repetição do cricrió
+            // Controle de repetição do cricrió (6 vezes e parar, invadindo as telas)
             let somPassaro = document.getElementById('som-passaro');
             let repeticoes = 0;
             
@@ -340,17 +348,19 @@
                 });
             }
 
-            // Tocar som no primeiro toque na tela
+            // 2. Tocar som no primeiro toque na tela
             document.addEventListener('click', function() {
                 if (somPassaro && somPassaro.paused && repeticoes === 0) {
                     somPassaro.play().catch(() => {});
                 }
             }, { once: true });
 
-            // Transição de tela forçada (aos 6 segundos)
+            // 3. Transição de tela forçada e garantida (aos 6 segundos)
             setTimeout(() => {
+                // Esconde o seringal à força
                 document.getElementById('screen-loader').classList.add('hidden', 'transparent');
                 
+                // Abre o castelo à força
                 let telaStart = document.getElementById('screen-start');
                 if (telaStart) {
                     telaStart.classList.remove('hidden', 'transparent');
