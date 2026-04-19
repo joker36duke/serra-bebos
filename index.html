@@ -189,6 +189,15 @@
             100% { opacity: 0; transform: scale(1.1); }
         }
 
+         /* Animação para a seta piscar */
+        @keyframes piscar-seta {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; } /* Some completamente no meio do tempo */
+        }
+        .animacao-seta {
+            animation: piscar-seta 0.8s infinite; /* Pisca rápido a cada 0.8s */
+        }
+
         /* ANIMAÇÕES DO LOADER */
         .animate-blink {
             animation: textBlink 1.5s infinite;
