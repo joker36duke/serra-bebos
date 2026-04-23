@@ -1182,63 +1182,8 @@
                 }
             }, 1800);
         }
-
-        // --- FINALIZAÇÃO ---
-        function endRound(forcedWinner = null) {
-            let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
-            let title = pWon ? "Vitória de Damião" : "Pirarucog Venceu";
-            let desc = pWon 
-                ? `A experiência do Bebo falou mais alto! Você faturou ${state.pScore} pontos.`
-                : `A selva engoliu a mesa. Pirarucog levou a rodada com ${state.eScore} pontos. El Dionysos aguarda a revanche.`;
-
-            let matchOver = false;
-            let matchWinnerIsPlayer = false;
-            let matchEndReason = "";
-            let matchEndDesc = "";
-
-            // Lógica de "Sair do Serra" e Derrotas Instantâneas
-            if (pWon) {
-                if (state.isDono) {
-                    // Pirarucog está no Serra e perdeu
-                    if (state.eSerraScore === 1 && state.eTricksWon === 0) {
-                        // Derrota instantânea por não fazer vazas no 1/3
-                        matchOver = true;
-                        matchWinnerIsPlayer = true;
-                        matchEndReason = "7 SERRA!";
-                        matchEndDesc = "Pela Regra do 7, Pirarucog não fez nenhuma vaza na rodada 1/3 e sofreu derrota instantânea! O vinho El Dionysos é seu!";
-                    } else {
-                        state.eSerraScore++; // Pirarucog vai para o próximo nível do serra
-                        if (state.eSerraScore > 3) {
-                            matchOver = true;
-                            matchWinnerIsPlayer = true;
-                            matchEndReason = "DOMÍNIO TOTAL";
-                            matchEndDesc = "Pirarucog foi derrotado 3 vezes! SERRADO! O Seringal é seu!";
-                        }
-
-                        
-                // --- FINALIZAÇÃO ---
-        function endRound(forcedWinner = null) {
-            let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
-            
-            // Textos Dinâmicos usando o player_name
-            let title = pWon ? "Vitória de " + player_name : "Pirarucog Venceu";
-            let desc = pWon 
-                ? `A experiência do Guardião falou mais alto! ${player_name} faturou ${state.pScore} pontos.`
-                : `A selva engoliu a mesa. Pirarucog levou a rodada com ${state.eScore} pontos. El Dionysos aguarda a revanche.`;
-
-            let matchOver = false;
-            let matchWinnerIsPlayer = false;
-            let matchEndReason = "";
-            let matchEndDesc = "";
-
-            // Lógica de "Sair do Serra" e Derrotas Instantâneas
-            if (pWon) {
-                if (state.isDono) {
-                    if (state.eSerraScore === 1 && state.eTricksWon === 0) {
-                        matchOver = true;
-                        matchWinnerIsPlayer = true;
-                        matchEndReason = "7 SERRA!";
-           // --- FINALIZAÇÃO ---
+        
+            // --- FINALIZAÇÃO ---
         function endRound(forcedWinner = null) {
             let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
             
