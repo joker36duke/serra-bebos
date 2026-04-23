@@ -307,21 +307,19 @@
 
     <!-- TELA 1: INÍCIO -->
                 <div id="screen-start" class="screen hidden transparent relative w-full h-full bg-black">
-        
-        <audio id="som-botoes" src="gurgel.mp3"></audio>
-
-        <img src="telaincial.png" alt="Castelo de El Dionysos" class="absolute inset-0 w-full h-full object-cover object-center">
-        
-        <div class="absolute inset-x-0 bottom-[15%] sm:bottom-[12%] flex justify-center px-6">
-            <div class="flex flex-col justify-between w-full max-w-[320px] h-[130px] gap-4 z-50">
-                
-                <button onclick="tocarSomBotao(); irParaAvatar();" class="w-full h-1/2 bg-transparent focus:outline-none cursor-pointer rounded-md" aria-label="Jogar Agora"></button>
-                
-                <button onclick="tocarSomBotao(); setTimeout(() => alert('O Castelo de El Dionysos em breve abrirá seus portões para Login!'), 100);" class="w-full h-1/2 bg-transparent focus:outline-none cursor-pointer rounded-md" aria-label="Login"></button>
-                
-            </div>
+    <audio id="som-botoes" src="gurgel.mp3"></audio>
+    <img src="telaincial.png" alt="Castelo de El Dionysos" class="absolute inset-0 w-full h-full object-cover object-center">
+    
+    <div class="absolute inset-x-0 bottom-[15%] sm:bottom-[12%] flex justify-center px-6">
+        <div class="flex flex-col justify-between w-full max-w-[320px] h-[130px] gap-4 z-50">
+            
+            <button onclick="tocarSomBotao(); alert('O sistema de login está inativo. O Castelo de El Dionysos abrirá seus portões assim que o banco de dados de cadastros for implementado!');" class="w-full h-1/2 bg-transparent focus:outline-none cursor-pointer rounded-md" aria-label="Login"></button>
+            
+            <button onclick="tocarSomBotao(); iniciarFluxoJogo();" class="w-full h-1/2 bg-transparent focus:outline-none cursor-pointer rounded-md" aria-label="Jogar Agora"></button>
+            
         </div>
     </div>
+</div>
 
 
     <!-- TELA DE INTRODUÇÃO -->
