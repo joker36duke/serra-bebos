@@ -1216,7 +1216,7 @@
                         }
 
                         
-        // --- FINALIZAÇÃO ---
+                // --- FINALIZAÇÃO ---
         function endRound(forcedWinner = null) {
             let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
             
@@ -1289,6 +1289,7 @@
                 showModal(title, desc, "Próxima Mão", startSeringalGame);
             }
         }
+
 
                 // --- FUNÇÃO PARA TOCAR SOM DOS BOTÕES ---
         function tocarSomBotao() {
