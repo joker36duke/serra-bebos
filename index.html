@@ -414,16 +414,19 @@
 
     
     <!-- TELA 2: SORTEIO -->
-    <div id="screen-luck" class="screen hidden transparent">
-        <div class="text-center mb-8">
-            <h2 class="font-cinzel text-4xl font-black text-wine tracking-[4px] uppercase drop-shadow-md">A Sorte no Seringal</h2>
-            <div class="flex flex-col items-center mt-4">
-                <div class="w-12 h-[2px] bg-[#722f1b] opacity-40 mb-3"></div>
-                <p class="font-cinzel text-[#3d1f14] font-bold text-[10px] uppercase tracking-[6px] leading-relaxed max-w-[250px]">Quem virar a maior carta domina a mesa</p>
-            </div>
+        <div id="screen-luck" class="screen hidden transparent relative overflow-hidden h-full w-full bg-black">
+        
+        <img src="fundosorteio.png" alt="Sorteio no Seringal" class="absolute inset-0 w-full h-full object-cover object-center z-0">
+        
+        <div class="absolute bottom-[5%] md:bottom-[10%] w-full flex flex-col items-center z-10 px-4">
+            
+            <p class="font-cinzel text-luxury-gold text-[9px] uppercase tracking-[4px] mb-4 bg-black/60 px-4 py-1.5 rounded-full border border-luxury-gold/30 backdrop-blur-sm shadow-lg animate-pulse">
+                Escolha uma carta para o sorteio
+            </p>
+            
+            <div id="luck-grid" class="luck-grid"></div>
+            
         </div>
-        <div id="luck-grid" class="luck-grid"></div>
-        <div class="footer-quote">Nem todo 🍷 é proibido,<br>mas apenas um Sommelier conduz o banquete.</div>
     </div>
 
     <!-- TELA 3: RESULTADO SORTEIO -->
