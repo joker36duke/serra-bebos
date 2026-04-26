@@ -1385,5 +1385,29 @@ function confirmGuardian() {
 
         
     </script>
+
+    <script type="module">
+  // Importa as ferramentas do Firebase direto da internet
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+  // Suas credenciais exclusivas do projeto
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
+    projectId: "serra-bebos",
+    storageBucket: "serra-bebos.firebasestorage.app",
+    databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
+  };
+
+  // Inicializa o aplicativo e a "mesa virtual" (Banco de Dados)
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  console.log("Conectado! A mesa do SerraBebos está pronta para o multiplayer.");
+
+  // Exemplo de como enviaremos uma jogada para o banco de dados no futuro:
+  // const partidaRef = ref(database, 'partidas/sala01');
+    </script>
+    
 </body>
 </html>
