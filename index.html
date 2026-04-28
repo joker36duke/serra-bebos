@@ -1366,6 +1366,38 @@ function confirmGuardian() {
     navTo('screen-avatar-carousel', 'screen-luck', renderLuckGrid);
 }
 
+            // Função exclusiva para o botão "Jogar Agora"
+    function clicarJogarAgora() {
+        // 1. Toca a buzina do Gurgel
+        tocarSomBotao();
+        
+        // 2. Espera os seus 1200ms
+        setTimeout(() => {
+            
+            // 3. Muda a tela (chama a sua função normal)
+            iniciarFluxoJogo();
+            
+            // 4. O Segredo: Espera só um piscar de olhos (100ms) para o telemóvel desenhar a tela na memória
+            setTimeout(() => {
+                let video = document.getElementById('video-adega');
+                if (video) {
+                    video.muted = false; // Liga a voz
+                    
+                    // Tenta forçar o play. Se o telemóvel ainda assim bloquear, ele tem um plano B (catch)
+                    let playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            // Plano B: Se bloquear o som, toca a imagem muda para não congelar
+                            video.muted = true;
+                            video.play();
+                        });
+                    }
+                }
+            }, 100); 
+            
+        }, 1200);
+    }
+    
         
     </script>
 
