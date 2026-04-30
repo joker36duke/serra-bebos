@@ -960,6 +960,10 @@
             
             const playedArea = document.getElementById('played-p');
             playedArea.innerHTML = '';
+
+            // Se o inimigo já jogou (state.eCard existe), a sua carta cai por cima (z-index 20).
+playedArea.style.zIndex = state.eCard ? "20" : "10";
+            
             const cUI = createCardUI(state.pCard);
             cUI.classList.add('played-card');
             playedArea.appendChild(cUI);
