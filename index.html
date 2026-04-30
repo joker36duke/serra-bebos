@@ -1143,7 +1143,6 @@ playedArea.style.zIndex = state.pCard ? "20" : "10";
                 
                 trickMsg.innerText = trickPts > 0 ? `VOCÊ LEVOU +${trickPts} PONTOS!` : `SUA VAZA!`;
                 trickMsg.className = "absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] text-[#22c55e] texto-vencedor-brilho font-cinzel font-black text-[16px] tracking-[4px] whitespace-nowrap pointer-events-none transition-all duration-300 transform scale-110";
-;
             } else {
                 wArea.firstChild.classList.add('card-winner-glow');
                 wArea.style.transform = "scale(1.1) translateY(20px)";
@@ -1151,7 +1150,7 @@ playedArea.style.zIndex = state.pCard ? "20" : "10";
                 lArea.style.opacity = "0.6";
                 
                 trickMsg.innerText = trickPts > 0 ? `PIRARUCOG LEVOU +${trickPts}` : `PIRARUCOG LEVOU`;
-                trickMsg.className = "absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] bg-wine text-luxury-gold font-cinzel font-black text-[12px] tracking-[3px] px-6 py-2 border border-luxury-gold rounded shadow-[0_0_20px_rgba(114,47,27,0.8)] pointer-events-none transition-all duration-300 transform scale-110";
+                trickMsg.className = "absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] text-[#ef4444] texto-vencedor-brilho font-cinzel font-black text-[16px] tracking-[4px] whitespace-nowrap pointer-events-none transition-all duration-300 transform scale-110";
             }
             
             trickMsg.classList.remove('hidden');
