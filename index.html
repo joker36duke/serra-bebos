@@ -752,10 +752,17 @@
                         luckTitle.classList.add('text-amazon'); // Fica verde para destacar
                         
                         setTimeout(() => {
-                            luckTitle.innerText = originalText;
-                            luckTitle.classList.remove('text-amazon');
-                            renderLuckGrid(); // Limpa as cartas e libera para um novo clique
-                        }, 2000);
+    luckTitle.innerText = originalText;
+    luckTitle.classList.remove('text-amazon');
+
+    // === RESET DO MOTOR DE SORTEIO ===
+    state.luckBusy = false;    // Libera a mesa para novos cliques
+    state.pLuckCard = null;    // Apaga a carta antiga do jogador
+    state.eLuckCard = null;    // Apaga a carta antiga do Pirarucog
+    
+    renderLuckGrid(); // Redesenha as 8 cartas viradas para baixo na mesa
+}, 2000);
+
                         return; // Interrompe para forçar a nova tirada
                     }
 
