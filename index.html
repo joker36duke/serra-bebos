@@ -556,8 +556,15 @@
         <p id="modal-subtitle" class="font-cinzel text-[#d4af37] text-[12px] tracking-[6px] mb-4 uppercase font-bold drop-shadow-md">Veredito</p>
         <h2 id="modal-title" class="text-4xl font-black font-cinzel mb-4 tracking-tighter text-white drop-shadow-lg"></h2>
         <p id="modal-desc" class="text-gray-300 mb-8 text-sm italic font-medium leading-relaxed"></p>
-        <div class="flex flex-col gap-4 items-center">
-            <button id="btn-continue" onclick="closeModal()" class="btn-main w-full max-w-[200px]">Continuar</button>
+                <div class="flex flex-col gap-4 items-center w-full mt-4">
+                    
+            <button id="btn-go-online" onclick="openRegistrationScreen()" class="w-full max-w-xs py-3 font-bold text-lg tracking-wider rounded border-2 bg-blue-900 border-[#d4af37] text-[#d4af37] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-transform active:scale-95">
+                Seguir para o Online
+            </button>
+            
+            <button id="btn-continue" onclick="closeModal()" class="w-full max-w-xs py-3 font-bold text-lg tracking-wider rounded border-2 bg-red-900 border-green-500 text-green-400 shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-transform active:scale-95">
+                Voltar ao Início
+            </button>
         </div>
     </div>
 </div>
