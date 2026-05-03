@@ -1536,22 +1536,25 @@ function confirmGuardian() {
         document.getElementById('screen-registration').classList.add('hidden');
     }
 
-    // Lógica que processa o cadastro e junta o nome com o Guardião
+        // Lógica que processa o cadastro e junta o nome com o Guardião
     document.getElementById('form-register').addEventListener('submit', function(event) {
         event.preventDefault(); // Evita que a página recarregue
         
         // 1. Pega o nome que o visitante digitou
         let nomeDigitado = document.getElementById('reg-username').value.trim();
         
-        // 2. Tenta pegar o Guardião lá do placar do jogador
-        let elementoGuardiao = document.getElementById('ui-role-p');
-        let textoGuardiao = elementoGuardiao ? elementoGuardiao.innerText.trim() : "";
+        // 2. Pega o Guardião direto da memória do jogo (variáveis)
+        let guardiaoEscolhido = "Seringueiro"; // Padrão
+        
+        // Verifica se a variável player_name ou state.pRole existe no seu jogo
+        if (typeof player_name !== 'undefined' && player_name !== "") {
+            guardiaoEscolhido = player_name;
+        } else if (typeof state !== 'undefined' && state.pRole) {
+            guardiaoEscolhido = state.pRole;
+        }
         
         // 3. Arruma as letras (De "TESTÚRION" para "Testúrion")
-        let guardiaoEscolhido = "Seringueiro"; // Nome padrão caso dê erro
-        if (textoGuardiao !== "") {
-            guardiaoEscolhido = textoGuardiao.charAt(0).toUpperCase() + textoGuardiao.slice(1).toLowerCase();
-        }
+        guardiaoEscolhido = guardiaoEscolhido.charAt(0).toUpperCase() + guardiaoEscolhido.slice(1).toLowerCase();
         
         // 4. Junta tudo!
         let nomeNoJogo = nomeDigitado + ' ' + guardiaoEscolhido;
