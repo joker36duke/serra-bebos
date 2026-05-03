@@ -1321,7 +1321,7 @@ playedArea.style.zIndex = state.pCard ? "20" : "10";
                             // ===> ESCONDE O BOTÃO ONLINE QUANDO VOCÊ PERDE:
                             document.getElementById('btn-go-online').classList.add('hidden');
                             
-                        } else if (state.eSerraScore >= 3) {
+                        } else if (state.eSerraScore > 3) {
                             matchOver = true;
                             matchWinnerIsPlayer = true;
                             matchEndReason = "DOMÍNIO TOTAL";
