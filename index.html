@@ -595,12 +595,14 @@
 
         <form id="form-register" class="w-full flex flex-col gap-4">
             
-            <div class="flex flex-col">
+                        <div class="flex flex-col">
                 <label for="reg-username" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">Seu Nome</label>
-                <div class="flex items-center gap-3">
-                    <input type="text" id="reg-username" placeholder="Ex: Damião" required
-                           class="flex-1 bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]">
-                    <span id="reg-guardian-name" class="font-cinzel text-xl text-[#d4af37] font-black tracking-widest drop-shadow-md">
+                <input type="text" id="reg-username" placeholder="Ex: Damião" required
+                       class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]">
+                
+                <div class="mt-1 text-right">
+                    <span class="font-cinzel text-xs text-[#d4af37]/70 tracking-widest uppercase">Guardião: </span>
+                    <span id="reg-guardian-name" class="font-cinzel text-lg text-[#d4af37] font-black tracking-widest drop-shadow-md">
                         </span>
                 </div>
             </div>
