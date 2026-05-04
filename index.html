@@ -1573,32 +1573,22 @@ function confirmGuardian() {
             `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
     }
 
-        // Abrir tela e capturar o clã do display correto
+            // Abrir tela e capturar o clã do display correto
     function openRegistrationScreen() {
         let clã = "Seringueiro"; // Padrão caso dê erro
         
-        // Agora o código procura no lugar certo da sua mesa (ui-role-p)
-        const displayName = document.getElementById('ui-role-p');
-        
-        if (displayName && displayName.innerText.trim() !== "") {
-            clã = displayName.innerText.trim();
-        } else if (typeof state !== 'undefined' && state.pRole) {
-            // Plano B: puxa direto da memória do jogo
-            clã = state.pRole;
+        // O SEGREDO ESTÁ AQUI: Puxamos o Guardião direto da memória do jogo (player_name)
+        if (typeof player_name !== 'undefined' && player_name !== "") {
+            clã = player_name;
         }
         
-        // Formatação elegante (de "LENTORION" para "Lentorion")
+        // Formatação elegante (garante que fique "Testúrion" em vez de "TESTÚRION")
         clã = clã.charAt(0).toUpperCase() + clã.slice(1).toLowerCase();
         
-        // Injeta o nome na tela
+        // Injeta o nome na tela (naquele espaço que arrumamos embaixo do nome)
         document.getElementById('reg-guardian-name').innerText = clã;
         
         document.getElementById('screen-registration').classList.remove('hidden');
-    }
-
-    // Função para FECHAR a tela de cadastro
-    function closeRegistrationScreen() {
-        document.getElementById('screen-registration').classList.add('hidden');
     }
 
     // Processar formulário e validar idade (18+)
