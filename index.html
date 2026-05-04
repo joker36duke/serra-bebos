@@ -477,41 +477,51 @@
 
 
     <!-- TELA 4: ARENA/MESA -->
-        <div id="screen-battle" class="screen hidden transparent">
+        
+                    <div id="screen-battle" class="screen hidden transparent">
         <div class="wood-table">
-            <div id="bisca-alert" class="status-banner bisca-alert hidden">BISCA NA RODA!</div>
-            <div id="trunfada-ui" class="status-banner trunfada-status hidden">TRUNFADA ATIVA</div>
+            
+            <div class="absolute w-full top-[12%] left-0 flex justify-between px-6 z-50 pointer-events-none">
+                <div id="bisca-alert" class="hidden bg-[#2a1a12] border-2 border-[#d4af37] rounded-lg px-5 py-2 shadow-[0_6px_15px_rgba(0,0,0,0.8)] font-cinzel text-2xl text-white font-black tracking-wider drop-shadow-[0_2px_4px_rgba(212,175,55,0.8)]">
+                    BISCA NA RODA!
+                </div>
+                <div id="trunfada-ui" class="hidden bg-[#2a1a12] border-2 border-[#d4af37] rounded-lg px-5 py-2 shadow-[0_6px_15px_rgba(0,0,0,0.8)] font-cinzel text-2xl text-white font-black tracking-wider drop-shadow-[0_2px_4px_rgba(212,175,55,0.8)]">
+                    TRUNFADA ATIVA
+                </div>
+            </div>
             
             <div class="score-ui">
-    <div class="flex flex-col bg-black/70 border border-[#d4af37]/50 rounded-lg px-3 py-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.5)] backdrop-blur-sm">
-        <span id="ui-role-p" class="font-cinzel font-black text-[9px] tracking-[2px] text-[#d4af37] uppercase"></span>
-        <div class="flex items-baseline gap-2 mt-1">
-            <span id="ui-player-name" class="font-cinzel text-[10px] font-black text-white">DAMIÃO:</span>
-            <span id="score-p" class="text-2xl text-[#22c55e] font-black font-cinzel drop-shadow-md">0</span>
-        </div>
-        <div id="serras-container-p" class="hidden mt-1"><span id="serras-p" class="serra-badge">0/3</span></div>
-    </div>
+                <div class="flex flex-col bg-black/70 border border-[#d4af37]/50 rounded-lg px-3 py-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.5)] backdrop-blur-sm">
+                    <span id="ui-role-p" class="font-cinzel font-black text-[9px] tracking-[2px] text-[#d4af37] uppercase"></span>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <span id="ui-player-name" class="font-cinzel text-[10px] font-black text-white">DAMIÃO:</span>
+                        <span id="score-p" class="text-2xl text-[#22c55e] font-black font-cinzel drop-shadow-md">0</span>
+                    </div>
+                    <div id="serras-container-p" class="hidden mt-1"><span id="serras-p" class="serra-badge">0/3</span></div>
+                </div>
 
-    <div class="flex flex-col items-end text-right bg-black/70 border border-[#d4af37]/50 rounded-lg px-3 py-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.5)] backdrop-blur-sm">
-        <span id="ui-role-e" class="font-cinzel font-black text-[9px] tracking-[2px] text-[#d4af37] uppercase"></span>
-        <div class="flex items-baseline gap-2 mt-1">
-            <span id="score-e" class="text-2xl text-[#ef4444] font-black font-cinzel drop-shadow-md">0</span>
-            <span class="font-cinzel text-[10px] font-black text-white">PIRARUCOG:</span>
-        </div>
-        <div id="serras-container-e" class="hidden mt-1"><span id="serras-e" class="serra-badge">0/3</span></div>
-    </div>
-</div>
+                <div class="flex flex-col items-end text-right bg-black/70 border border-[#d4af37]/50 rounded-lg px-3 py-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.5)] backdrop-blur-sm">
+                    <span id="ui-role-e" class="font-cinzel font-black text-[9px] tracking-[2px] text-[#d4af37] uppercase"></span>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <span id="score-e" class="text-2xl text-[#ef4444] font-black font-cinzel drop-shadow-md">0</span>
+                        <span class="font-cinzel text-[10px] font-black text-white">PIRARUCOG:</span>
+                    </div>
+                    <div id="serras-container-e" class="hidden mt-1"><span id="serras-e" class="serra-badge">0/3</span></div>
+                </div>
+            </div>
+            
             <div id="enemy-hand-table" class="absolute top-[33%] left-1/2 -translate-x-1/2 flex gap-2 scale-[0.85] origin-top pointer-events-none"></div>
 
             <div class="deck-vaza-area">
                 <div class="stack-container">
                     <div id="trump-indicator" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black font-cinzel font-black text-[10px] tracking-[2px] px-2 py-1 rounded border-2 border-black whitespace-nowrap z-30 shadow-[0_4px_10px_rgba(0,0,0,0.5)]"></div>
                     <button id="btn-popo" onclick="executarPopo()" class="btn-popo">PAPÔ</button>
-                    <div id="ui-vira" class="vira-pos card-mesa shadow-lg"></div>
+                    
+                    <div id="ui-vira" class="vira-pos card-mesa shadow-lg bg-white opacity-100 rounded-md"></div>
                     
                     <div id="ui-monte" class="monte-pos card-mesa card-back-style shadow-2xl relative overflow-hidden">
-    <div id="deck-count-ui" class="deck-counter-badge"></div>
-</div>
+                        <div id="deck-count-ui" class="deck-counter-badge"></div>
+                    </div>
                 </div>
             </div>
 
@@ -538,10 +548,10 @@
                 <div id="trick-result-msg" class="hidden"></div>
 
                 <div class="flex justify-center items-center -space-x-10 z-10 mt-[28%]">
-    <div id="played-e" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300 -rotate-12 mt-4" style="z-index: 10;"></div>
-    
-    <div id="played-p" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300 rotate-6" style="z-index: 10;"></div>
-</div>
+                    <div id="played-e" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300 -rotate-12 mt-4" style="z-index: 10;"></div>
+                    
+                    <div id="played-p" class="relative h-[120px] w-[85px] flex items-center justify-center pointer-events-auto transition-all duration-300 rotate-6" style="z-index: 10;"></div>
+                </div>
             </div>
 
             <div class="h-[160px] w-full flex justify-center items-center gap-4 px-4 pb-4 z-20">
