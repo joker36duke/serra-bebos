@@ -607,10 +607,10 @@
                 </div>
             </div>
 
-            <div class="flex flex-col">
+                        <div class="flex flex-col">
                 <label for="reg-dob" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">Data de Nascimento</label>
-                <input type="date" id="reg-dob" required
-                       class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] [color-scheme:dark]">
+                <input type="tel" id="reg-dob" placeholder="DD/MM/AAAA" maxlength="10" required oninput="mascaraData(this)"
+                       class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] tracking-[2px]">
             </div>
 
             <div class="flex flex-col">
