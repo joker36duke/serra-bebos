@@ -1543,8 +1543,29 @@ function confirmGuardian() {
         }, 1200);
     }
     
-          // Função para ABRIR a tela de cadastro
+              // Alternar visibilidade da senha (Olhinho)
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('reg-password');
+        const eyeIcon = document.getElementById('eye-icon');
+        const isPass = passInput.type === 'password';
+        
+        passInput.type = isPass ? 'text' : 'password';
+        eyeIcon.innerHTML = isPass ? 
+            `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />` :
+            `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
+    }
+
+    // Abrir tela e capturar o clã do display correto
     function openRegistrationScreen() {
+        const displayName = document.getElementById('p-name-display');
+        let clã = displayName ? displayName.innerText.trim() : "Seringueiro";
+        
+        // Formatação elegante (de "TESTÚRION" para "Testúrion")
+        clã = clã.charAt(0).toUpperCase() + clã.slice(1).toLowerCase();
+        
+        // Injeta o nome na tela
+        document.getElementById('reg-guardian-name').innerText = clã;
+        
         document.getElementById('screen-registration').classList.remove('hidden');
     }
 
@@ -1553,36 +1574,40 @@ function confirmGuardian() {
         document.getElementById('screen-registration').classList.add('hidden');
     }
 
-        // Lógica que processa o cadastro e junta o nome com o Guardião
-    document.getElementById('form-register').addEventListener('submit', function(event) {
-        event.preventDefault(); // Evita que a página recarregue
+    // Processar formulário e validar idade (18+)
+    document.getElementById('form-register').addEventListener('submit', function(e) {
+        e.preventDefault(); // Evita que a página recarregue
         
-        // 1. Pega o nome que o visitante digitou
-        let nomeDigitado = document.getElementById('reg-username').value.trim();
+        const dobInput = document.getElementById('reg-dob').value;
+        if (!dobInput) return; // Se a data estiver vazia, não faz nada
+
+        const dob = new Date(dobInput);
+        const today = new Date();
         
-        // 2. Pega o Guardião direto da memória do jogo (variáveis)
-        let guardiaoEscolhido = "Seringueiro"; // Padrão
+        // Calcula a idade
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
         
-        // Verifica se a variável player_name ou state.pRole existe no seu jogo
-        if (typeof player_name !== 'undefined' && player_name !== "") {
-            guardiaoEscolhido = player_name;
-        } else if (typeof state !== 'undefined' && state.pRole) {
-            guardiaoEscolhido = state.pRole;
+        // Ajusta se o aniversário ainda não chegou no ano atual
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+            age--;
         }
+
+        // Barra menores de 18
+        if (age < 18) {
+            alert("ACESSO NEGADO:\nO Seringal é implacável. Cadastro permitido apenas para maiores de 18 anos.");
+            return; // Para tudo e não deixa cadastrar
+        }
+
+        // Se passou da idade, junta o nome e dá boas-vindas
+        const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
+        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + " (" + age + " anos).");
         
-        // 3. Arruma as letras (De "TESTÚRION" para "Testúrion")
-        guardiaoEscolhido = guardiaoEscolhido.charAt(0).toUpperCase() + guardiaoEscolhido.slice(1).toLowerCase();
-        
-        // 4. Junta tudo!
-        let nomeNoJogo = nomeDigitado + ' ' + guardiaoEscolhido;
-        
-        // Mostra o resultado do nome completo
-        alert("Bem-vindo ao Online, " + nomeNoJogo + "!\nSua lenda no SerraBebos começa agora.");
-        
-        // Limpa os campos e fecha a tela
+        // Limpa o formulário e fecha a tela
         this.reset();
         closeRegistrationScreen();
     });
+
   
     </script>
 
