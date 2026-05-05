@@ -1619,9 +1619,11 @@ function confirmGuardian() {
             return; 
         }
 
-        // Se passou da idade, junta o nome e dá boas-vindas
+        // Se passou da idade, junta o nome e dá boas-vindas com o aviso do E-mail
         const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
-        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + " (" + age + " anos).");
+        const emailDigitado = document.getElementById('reg-email').value.trim();
+        
+        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + " (" + age + " anos).\n\n⚠️ ATENÇÃO: Enviamos um pergaminho de confirmação para:\n" + emailDigitado + "\n\nPor favor, confirme seu e-mail para ativar o seu acesso ao Seringal!");
         
         // Limpa o formulário e fecha a tela
         this.reset();
