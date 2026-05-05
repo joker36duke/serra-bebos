@@ -1718,28 +1718,109 @@ function confirmGuardian() {
         
     </script>
 
-    <script type="module">
-  // Importa as ferramentas do Firebase direto da internet
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+        <script type="module">
+        // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  // Suas credenciais exclusivas do projeto
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
-    projectId: "serra-bebos",
-    storageBucket: "serra-bebos.firebasestorage.app",
-    databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
-  };
+        // Suas credenciais exclusivas do projeto
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
+            projectId: "serra-bebos",
+            storageBucket: "serra-bebos.firebasestorage.app",
+            databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
+        };
 
-  // Inicializa o aplicativo e a "mesa virtual" (Banco de Dados)
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
+        // Inicializa o motor
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app); // Liga a ignição da autenticação!
 
-  console.log("Conectado! A mesa do SerraBebos está pronta para o multiplayer.");
+        console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
-  // Exemplo de como enviaremos uma jogada para o banco de dados no futuro:
-  // const partidaRef = ref(database, 'partidas/sala01');
-    
+        // ==========================================
+        // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
+        // ==========================================
+        const formRegister = document.getElementById('form-register');
+        if(formRegister) {
+            formRegister.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('reg-email').value.trim();
+                const password = document.getElementById('reg-password').value;
+                const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
+                
+                // Validação de Idade
+                const dobInput = document.getElementById('reg-dob').value;
+                if (dobInput.length < 10) {
+                    alert("Por favor, digite a data completa (Ex: 01/01/1990).");
+                    return;
+                }
+                const partes = dobInput.split('/');
+                const dob = new Date(partes[2], partes[1] - 1, partes[0]);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) { age--; }
+                
+                if (age < 18) {
+                    alert("ACESSO NEGADO:\nO Seringal é implacável. Cadastro permitido apenas para maiores de 18 anos.");
+                    return; 
+                }
+
+                alert("Invocando os espíritos da floresta... Aguarde.");
+
+                // Manda o Firebase criar a conta
+                createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Conta criada! Dispara o e-mail
+                    sendEmailVerification(userCredential.user).then(() => {
+                        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + ".\n\n⚠️ ATENÇÃO: Enviamos um pergaminho de confirmação para:\n" + email + "\n\nAbra seu e-mail e clique no link para validar seu acesso!");
+                        formRegister.reset();
+                        document.getElementById('screen-registration').classList.add('hidden');
+                    });
+                })
+                .catch((error) => {
+                    if(error.code === 'auth/email-already-in-use') {
+                        alert("Esse e-mail já pertence a uma lenda do Seringal! Tente fazer Login.");
+                    } else if (error.code === 'auth/weak-password') {
+                        alert("A senha é muito fraca. Use pelo menos 6 caracteres.");
+                    } else {
+                        alert("Erro na floresta: " + error.message);
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // 2. MOTOR DE LOGIN OFICIAL
+        // ==========================================
+        const formLogin = document.getElementById('form-login');
+        if(formLogin) {
+            formLogin.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value;
+
+                alert("Verificando credenciais...");
+
+                // Pede permissão para o Firebase para entrar
+                signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Verifica se o jogador clicou no link do e-mail
+                    if(userCredential.user.emailVerified) {
+                        alert("Acesso Concedido!\nBem-vindo de volta ao Seringal!");
+                        document.getElementById('screen-login').classList.add('hidden');
+                    } else {
+                        alert("⚠️ E-mail não confirmado!\nPor favor, verifique sua caixa de entrada (ou lixo eletrônico) e clique no link antes de entrar.");
+                        auth.signOut(); // Chuta o jogador pra fora porque não confirmou
+                    }
+                })
+                .catch((error) => {
+                    alert("Acesso Negado: E-mail ou senha incorretos.");
+                });
+            });
+        }
     </script>
 
     </div> 
