@@ -1650,9 +1650,6 @@ function confirmGuardian() {
     }
 
         // Processar formulário e validar idade (18+)
-    document.getElementById('form-register').addEventListener('submit', function(e) {
-        e.preventDefault(); // Evita que a página recarregue
-        
         const dobInput = document.getElementById('reg-dob').value;
         if (dobInput.length < 10) {
             alert("Por favor, digite a data de nascimento completa (Ex: 01/01/1990).");
