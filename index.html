@@ -645,7 +645,7 @@
     </div>
 </div>
 
-        <!-- TELA 5: CADASTRO -->
+        <!-- TELA 6: login -->
         <div id="screen-login" class="hidden fixed inset-0 z-[2000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-[#1a0f0a] border-2 border-[#d4af37] rounded-xl p-6 shadow-[0_0_40px_rgba(212,175,55,0.3)] flex flex-col items-center">
             
@@ -683,6 +683,31 @@
             </form>
         </div>
     </div>
+    
+        <!-- Aviso de Cadastro -->
+        <div id="screen-info-signup" class="hidden fixed inset-0 z-[2000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-[#1a0f0a] border-2 border-[#d4af37] rounded-xl p-8 shadow-[0_0_40px_rgba(212,175,55,0.3)] flex flex-col items-center text-center">
+            
+            <h2 class="font-cinzel font-black text-2xl text-[#d4af37] tracking-widest uppercase mb-4 drop-shadow-md">
+                Prove seu Valor
+            </h2>
+            
+            <p class="font-cinzel text-white/90 text-sm leading-relaxed mb-8">
+                O registro oficial no Seringal é um privilégio. Para conquistar o seu lugar e criar sua conta, você deve primeiro passar pelo <strong class="text-[#d4af37]">Tutorial</strong> e enfrentar o temível <strong class="text-[#ef4444]">Pirarucog</strong>.
+            </p>
+
+            <div class="flex flex-col gap-4 w-full mt-2">
+                <button type="button" onclick="iniciarTutorialPeloAviso()" class="w-full h-[45px] bg-[#722f1b] border-2 border-[#d4af37] text-white font-cinzel font-black tracking-[3px] uppercase rounded-md shadow-[0_4px_10px_rgba(0,0,0,0.6)] hover:bg-[#d4af37] hover:text-[#722f1b] transition-colors cursor-pointer text-sm">
+                    Jogar Agora
+                </button>
+                
+                <button type="button" onclick="voltarParaLogin()" class="w-full py-2 font-bold text-sm tracking-wider rounded border border-red-900 text-red-500 uppercase transition-transform active:scale-95 hover:bg-red-900/10">
+                    Voltar
+                </button>
+            </div>
+        </div>
+        </div>
+    
 
     <script>
         // --- CONSTANTES DO JOGO ---
