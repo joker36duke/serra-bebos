@@ -683,31 +683,17 @@
             }, 600);
         }   
         
-                // --- FLUXO DE ENTRADA DO JOGO ---
+         // --- FLUXO DE ENTRADA DO JOGO ---
         function startGameFlow() {
             
-            // Inicia a transição de tela (o som do botão já tocou no clique)
+            // Inicia a transição da Tela Inicial para a Tela do Vídeo (Intro)
             navTo('screen-start', 'screen-intro', () => {
                 
-                // 1. Dá um pequeno intervalo (800 milissegundos) antes de servir o drink
+                // Aguarda exatos 8 segundos (tempo do vídeo) e vai direto para o Sorteio
                 setTimeout(() => {
-                    let somDrink = document.getElementById('som-drink');
-                    if (somDrink) {
-                        somDrink.currentTime = 0;
-                        somDrink.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
-                    }
-                }, 1000); 
-
-                // 2. Tempo AUMENTADO para leitura do pergaminho (foi de 5625 para 8500ms = 8,5 segundos)
-                setTimeout(() => {
-                    // Corta o som do drink antes de ir para a mesa de sorteio
-                    let somDrink = document.getElementById('som-drink');
-                    if (somDrink) {
-                        somDrink.pause();
-                        somDrink.currentTime = 0;
-                    }
                     navTo('screen-intro', 'screen-luck', renderLuckGrid);
-                }, 12000); 
+                }, 8000); 
+                
             });
         }
         
