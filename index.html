@@ -1712,6 +1712,21 @@ function confirmGuardian() {
         closeLoginScreen();
     });
 
+            // Funções do Aviso de Cadastro
+    function abrirAvisoCadastro() {
+        closeLoginScreen(); // Fecha a de login
+        document.getElementById('screen-info-signup').classList.remove('hidden'); // Abre o aviso
+    }
+
+    function voltarParaLogin() {
+        document.getElementById('screen-info-signup').classList.add('hidden'); // Fecha o aviso
+        openLoginScreen(); // Volta para o login
+    }
+
+    function iniciarTutorialPeloAviso() {
+        document.getElementById('screen-info-signup').classList.add('hidden'); // Esconde a tela preta
+        clicarJogarAgora(); // Dispara o jogo (vídeo da adega, buzina, etc.)
+    }
         
     </script>
 
