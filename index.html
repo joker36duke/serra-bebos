@@ -645,6 +645,45 @@
     </div>
 </div>
 
+        <!-- TELA 5: CADASTRO -->
+        <div id="screen-login" class="hidden fixed inset-0 z-[2000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-[#1a0f0a] border-2 border-[#d4af37] rounded-xl p-6 shadow-[0_0_40px_rgba(212,175,55,0.3)] flex flex-col items-center">
+            
+            <h2 class="font-cinzel font-black text-3xl text-[#d4af37] tracking-widest uppercase mb-6 drop-shadow-md text-center">
+                Entrar no Seringal
+            </h2>
+
+            <form id="form-login" class="w-full flex flex-col gap-4">
+                <div class="flex flex-col">
+                    <label for="login-email" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">E-mail</label>
+                    <input type="email" id="login-email" placeholder="seu@email.com" required
+                           class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37]">
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="login-password" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">Senha</label>
+                    <input type="password" id="login-password" placeholder="********" required
+                           class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37]">
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4">
+                    <button type="submit" class="w-full py-3 font-bold text-lg tracking-wider rounded border-2 bg-blue-900 border-[#d4af37] text-[#d4af37] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-transform active:scale-95">
+                        Acessar Seringal
+                    </button>
+                    
+                    <p class="text-center text-[#d4af37]/60 text-xs font-cinzel">
+                        Não tem uma conta? 
+                        <button type="button" onclick="closeLoginScreen(); openRegistrationScreen();" class="text-[#d4af37] underline font-bold">Cadastre-se</button>
+                    </p>
+
+                    <button type="button" onclick="closeLoginScreen()" class="w-full py-2 font-bold text-sm tracking-wider rounded border border-red-900 text-red-500 uppercase transition-transform active:scale-95 hover:bg-red-900/10">
+                        Voltar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // --- CONSTANTES DO JOGO ---
         const suits = ['Paus', 'Espadas', 'Copas', 'Ouros'];
