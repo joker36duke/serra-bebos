@@ -836,30 +836,30 @@
                     let pPower = getSorteioPower(cardP);
                     let ePower = getSorteioPower(cardE);
 
-                // Nova Regra: Se der empate
+                                    // Nova Regra: Se der empate
                     if (pPower === ePower) {
-                        const luckTitle = document.querySelector('#screen-luck h2');
+                        // 1. Procura o texto certo (que é um <p> e não um <h2>)
+                        const luckTitle = document.querySelector('#screen-luck p');
                         const originalText = luckTitle.innerText;
+                        
+                        // 2. Muda o texto para avisar do empate
                         luckTitle.innerText = "EMPATE! NOVO SORTEIO";
-                        luckTitle.classList.add('text-amazon'); // Fica verde para destacar
+                        luckTitle.classList.remove('text-luxury-gold');
+                        luckTitle.classList.add('text-amazon'); // Fica verde
                         
                         setTimeout(() => {
+                            // 3. Devolve o texto ao normal
                             luckTitle.innerText = originalText;
                             luckTitle.classList.remove('text-amazon');
+                            luckTitle.classList.add('text-luxury-gold');
                             
-                            // ===> O SEGREDO PARA DESTRAVAR A MESA <===
-                            // Precisamos zerar as variáveis que controlam o sorteio.
-                            // Substitua os nomes abaixo pelos nomes EXATOS das variáveis
-                            // que você usa no seu código para guardar as escolhas:
-                            cardP = null; 
-                            cardE = null;
+                            // 4. DESTRAVA A MESA PARA NOVO CLIQUE
+                            state.luckBusy = false;
                             
-                            // Se você tiver uma variável que bloqueia o clique (tipo um cadeado),
-                            // você precisa destrancá-la aqui também. Exemplo:
-                            // jogadorJaEscolheu = false; 
-                            
-                            renderLuckGrid(); // Limpa as cartas e libera para um novo clique
+                            // 5. Refaz as cartas viradas para baixo
+                            renderLuckGrid(); 
                         }, 2000);
+                        
                         return; // Interrompe para forçar a nova tirada
                     }
                     
