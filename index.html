@@ -1669,7 +1669,25 @@ function confirmGuardian() {
         closeRegistrationScreen();
     });
 
-  
+      // Funções para a Tela de Login
+    function openLoginScreen() {
+        document.getElementById('screen-login').classList.remove('hidden');
+    }
+
+    function closeLoginScreen() {
+        document.getElementById('screen-login').classList.add('hidden');
+    }
+
+    // Lógica do botão de Login (por enquanto apenas visual)
+    document.getElementById('form-login').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        alert("Iniciando conexão com o Seringal...\nVerificando credenciais para: " + email);
+        // Aqui entraremos com o Firebase Authentication no próximo passo!
+        closeLoginScreen();
+    });
+
+        
     </script>
 
     <script type="module">
