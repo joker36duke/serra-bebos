@@ -138,12 +138,20 @@
             animation: pulseFlash 1s infinite;
         }
 
-        .trunfada-status { 
-            background: #b91c1c; color: white; 
-            box-shadow: 0 0 20px rgba(185, 28, 28, 0.5); 
-            animation: pulseFlash 1s infinite; 
-            transition: all 0.3s;
+        .trunfada-alert {
+            background: #ff0000 !important;
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.9) !important;
+            border-color: #ff0000 !important;
         }
+
+        /* Nova animação de piscar para a lateral */
+        @keyframes pulseSide { 
+            0% { opacity: 0.8; transform: scale(1); } 
+            50% { opacity: 1; transform: scale(1.05); } 
+            100% { opacity: 0.8; transform: scale(1); } 
+        }
+
 
         .trunfada-alert {
             background: #ff0000 !important;
