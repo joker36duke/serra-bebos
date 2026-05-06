@@ -1775,18 +1775,18 @@ function confirmGuardian() {
         window.recuperarSenha = function() {
             const emailInput = document.getElementById('login-email').value.trim();
             if (!emailInput) {
-                mostrarAlertaSeringal("O Mensageiro Aguarda", "Para convocar o Mensageiro do Seringal, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
+                mostrarAlertaSeringal("O Bebo-Mor Aguarda", "Para convocar o Bebo-Mor do Seringal, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
                 return;
             }
             
-            mostrarAlertaSeringal("A Caminho...", "Invocando o Mensageiro do Seringal para buscar seus dados...");
+            mostrarAlertaSeringal("A Caminho...", "Invocando o Bebo-Mor do Seringal para buscar seus dados...");
             
             sendPasswordResetEmail(auth, emailInput)
                 .then(() => {
-                    mostrarAlertaSeringal("O Mensageiro Partiu!", "O Mensageiro do Seringal iniciou a jornada pela mata!\n\nSe o e-mail '" + emailInput + "' for de uma lenda verdadeira, ele entregará o pergaminho de recuperação.\n\nCheque sua caixa de entrada e os cantos escuros do Spam.");
+                    mostrarAlertaSeringal("O Bebo-Mor Partiu!", "O Bebo-Mor do Seringal iniciou a jornada pela mata!\n\nSe o e-mail '" + emailInput + "' for de uma lenda verdadeira, ele entregará o pergaminho de recuperação.\n\nCheque sua caixa de entrada e os cantos escuros do Spam.");
                 })
                 .catch((error) => {
-                    mostrarAlertaSeringal("Aviso da Floresta", "O Mensageiro se perdeu na mata. Tente novamente mais tarde.");
+                    mostrarAlertaSeringal("Aviso da Floresta", "O Bebo-Mor se perdeu na mata. Tente novamente mais tarde.");
                 });
         };
             
@@ -1804,13 +1804,13 @@ function confirmGuardian() {
                 const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
                 
                 if (password !== confirmPassword) {
-                    mostrarAlertaSeringal("O Mensageiro Recusou", "O Mensageiro do Seringal notou um erro: as senhas não coincidem!\nPor favor, digite a mesma senha nos dois campos.");
+                    mostrarAlertaSeringal("O Bebo-Mor Recusou", "O Bebo-Mor do Seringal notou um erro: as senhas não coincidem!\nPor favor, digite a mesma senha nos dois campos.");
                     return; 
                 }
                 
                 const dobInput = document.getElementById('reg-dob').value;
                 if (dobInput.length < 10) {
-                    mostrarAlertaSeringal("Faltam Dados", "O Mensageiro precisa saber a data correta do seu nascimento (Ex: 01/01/1990).");
+                    mostrarAlertaSeringal("Faltam Dados", "O Bebo-Mor precisa saber a data correta do seu nascimento (Ex: 01/01/1990).");
                     return;
                 }
                 const partes = dobInput.split('/');
@@ -1820,16 +1820,16 @@ function confirmGuardian() {
                 if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) { age--; }
                 
                 if (age < 18) {
-                    mostrarAlertaSeringal("O Mensageiro Barrou Você", "O Seringal é implacável. Pelas leis da floresta, o cadastro é permitido apenas para maiores de 18 anos.");
+                    mostrarAlertaSeringal("O Bebo-Mor Barrou Você", "O Seringal é implacável. Pelas leis da floresta, o cadastro é permitido apenas para maiores de 18 anos.");
                     return; 
                 }
 
-                mostrarAlertaSeringal("Registrando...", "O Mensageiro do Seringal está levando seus selos aos anciões...");
+                mostrarAlertaSeringal("Registrando...", "O Bebo-Mor do Seringal está levando seus selos aos anciões...");
 
                 createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     sendEmailVerification(userCredential.user).then(() => {
-                        mostrarAlertaSeringal("Lenda Registrada!", "O Mensageiro do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Mensageiro acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
+                        mostrarAlertaSeringal("Lenda Registrada!", "O Bebo-Mor do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Bebo-Mor acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
                         formRegister.reset();
                         
                         // Fecha a tela de cadastro e abre a de login silenciosamente por trás do alerta!
@@ -1839,9 +1839,9 @@ function confirmGuardian() {
                 })
                 .catch((error) => {
                     if(error.code === 'auth/email-already-in-use') {
-                        mostrarAlertaSeringal("Já Conhecemos Você", "O Mensageiro do Seringal avisa: Este e-mail já pertence a uma lenda da mesa! Tente fazer Login.");
+                        mostrarAlertaSeringal("Já Conhecemos Você", "O Bebo-Mor do Seringal avisa: Este e-mail já pertence a uma lenda da mesa! Tente fazer Login.");
                     } else if (error.code === 'auth/weak-password') {
-                        mostrarAlertaSeringal("Defesa Fraca", "O Mensageiro alerta: Sua senha é muito fraca para proteger seus segredos na floresta. Use pelo menos 6 caracteres.");
+                        mostrarAlertaSeringal("Defesa Fraca", "O Bebo-Mor alerta: Sua senha é muito fraca para proteger seus segredos na floresta. Use pelo menos 6 caracteres.");
                     } else {
                         mostrarAlertaSeringal("Erro na Floresta", error.message);
                     }
@@ -1859,25 +1859,25 @@ function confirmGuardian() {
                 const email = document.getElementById('login-email').value.trim();
                 const password = document.getElementById('login-password').value;
 
-                mostrarAlertaSeringal("Analisando...", "O Mensageiro está conferindo seus selos de acesso na entrada do Seringal...");
+                mostrarAlertaSeringal("Analisando...", "O Bebo-Mor está conferindo seus selos de acesso na entrada do Seringal...");
 
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     if(userCredential.user.emailVerified) {
                         document.getElementById('screen-login').classList.add('hidden');
-                        mostrarAlertaSeringal("Portões Abertos!", "O Mensageiro do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
+                        mostrarAlertaSeringal("Portões Abertos!", "O Bebo-Mor do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
                     } else {
                         sendEmailVerification(userCredential.user).then(() => {
-                            mostrarAlertaSeringal("Pergaminho Faltando!", "O Mensageiro do Seringal barrou a passagem: O seu pergaminho não foi assinado!\n\nEle acabou de enviar um NOVO aviso para o seu e-mail.\n\nVerifique sua caixa de entrada (e o Spam), confirme sua identidade e tente novamente.");
+                            mostrarAlertaSeringal("Pergaminho Faltando!", "O Bebo-Mor do Seringal barrou a passagem: O seu pergaminho não foi assinado!\n\nEle acabou de enviar um NOVO aviso para o seu e-mail.\n\nVerifique sua caixa de entrada (e o Spam), confirme sua identidade e tente novamente.");
                             auth.signOut();
                         }).catch((error) => {
-                            mostrarAlertaSeringal("Calma, Lenda!", "O Mensageiro já enviou o seu pergaminho recentemente. Por favor, verifique o seu Spam/Lixo Eletrônico.");
+                            mostrarAlertaSeringal("Calma, Lenda!", "O Bebo-Mor já enviou o seu pergaminho recentemente. Por favor, verifique o seu Spam/Lixo Eletrônico.");
                             auth.signOut();
                         });
                     }
                 })
                 .catch((error) => {
-                    mostrarAlertaSeringal("Acesso Negado", "O Mensageiro do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
+                    mostrarAlertaSeringal("Acesso Negado", "O Bebor-Mor do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
                 });
             }); 
         }
