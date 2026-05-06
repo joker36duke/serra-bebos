@@ -2002,6 +2002,36 @@ function confirmGuardian() {
         </div>
     </div>
 
+        <div id="custom-alert-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="w-full max-w-sm bg-[#1a0f0a] border-2 border-[#d4af37] rounded-xl p-6 shadow-[0_0_40px_rgba(212,175,55,0.3)] flex flex-col items-center text-center">
+            
+            <h2 id="custom-alert-title" class="font-cinzel font-black text-xl text-[#d4af37] tracking-widest uppercase mb-4 drop-shadow-md">
+                Aviso
+            </h2>
+            
+            <p id="custom-alert-message" class="font-cinzel text-white/90 text-sm leading-relaxed mb-6 whitespace-pre-line">
+                Mensagem vai aqui.
+            </p>
+
+            <button onclick="fecharAlertaSeringal()" class="w-full py-2 font-bold text-sm tracking-wider rounded border-2 border-[#d4af37] bg-[#722f1b] text-[#d4af37] uppercase transition-transform active:scale-95 hover:bg-[#d4af37] hover:text-[#1a0f0a] shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
+                Entendido
+            </button>
+            
+        </div>
+    </div>
+
+    <script>
+        window.mostrarAlertaSeringal = function(titulo, mensagem) {
+            document.getElementById('custom-alert-title').innerText = titulo;
+            document.getElementById('custom-alert-message').innerText = mensagem;
+            document.getElementById('custom-alert-modal').classList.remove('hidden');
+        };
+
+        window.fecharAlertaSeringal = function() {
+            document.getElementById('custom-alert-modal').classList.add('hidden');
+        };
+    </script>
+    
 </body> 
 </html>
 
