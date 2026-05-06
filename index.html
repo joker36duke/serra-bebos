@@ -1849,41 +1849,135 @@ function confirmGuardian() {
         }
 
         // 2. MOTOR DE LOGIN OFICIAL
-        // ==========================================
-        const formLogin = document.getElementById('form-login');
-        if(formLogin) {
-            formLogin.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value.trim();
-                const password = document.getElementById('login-password').value;
+<script type="module">
+    // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        
+    // Suas credenciais exclusivas do projeto
+    const firebaseConfig = {
+        apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
+        projectId: "serra-bebos",
+        storageBucket: "serra-bebos.firebasestorage.app",
+        databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
+    };
 
-                alert("Verificando credenciais...");
+    // Inicializa o motor
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app); 
 
-                                // Pede permissão para o Firebase para entrar
-                signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Verifica se o jogador clicou no link do e-mail
-                    if(userCredential.user.emailVerified) {
-                        alert("Acesso Concedido!\nBem-vindo de volta ao Seringal!");
-                        document.getElementById('screen-login').classList.add('hidden');
-                    } else {
-                        // A MÁGICA ACONTECE AQUI: Envia um novo e-mail automaticamente!
-                        sendEmailVerification(userCredential.user).then(() => {
-                            alert("⚠️ E-mail ainda não confirmado!\n\nPercebemos que o seu link pode ter expirado ou se perdido. Acabamos de enviar um NOVO pergaminho de confirmação para o seu e-mail!\n\nVerifique sua caixa de entrada (e a aba de Spam), clique no novo link e tente entrar novamente.");
-                            auth.signOut(); // Desconecta até ele confirmar
-                        }).catch((error) => {
-                            // Se ele tentar clicar várias vezes seguidas, o Firebase bloqueia por segurança
-                            alert("⚠️ E-mail não confirmado! Já enviamos um link fresquinho para você agora pouco. Por favor, verifique o seu Spam/Lixo Eletrônico.");
-                            auth.signOut();
-                        });
-                    }
-                })
-                .catch((error) => {
-                    alert("Acesso Negado: E-mail ou senha incorretos.");
-                });
-            });
+    console.log("Motor do Firebase Ligado e Autenticação Pronta!");
+
+    // RECUPERAÇÃO DE SENHA
+    // ==========================================
+    window.recuperarSenha = function() {
+        const emailInput = document.getElementById('login-email').value.trim();
+        if (!emailInput) {
+            mostrarAlertaSeringal("O Mensageiro Aguarda", "Para convocar o Mensageiro do Seringal, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
+            return;
         }
-    </script>
+        
+        mostrarAlertaSeringal("A Caminho...", "Invocando o Mensageiro do Seringal para buscar seus dados...");
+        
+        sendPasswordResetEmail(auth, emailInput)
+            .then(() => {
+                mostrarAlertaSeringal("O Mensageiro Partiu!", "O Mensageiro do Seringal iniciou a jornada pela mata!\n\nSe o e-mail '" + emailInput + "' for de uma lenda verdadeira, ele entregará o pergaminho de recuperação.\n\nCheque sua caixa de entrada e os cantos escuros do Spam.");
+            })
+            .catch((error) => {
+                mostrarAlertaSeringal("Aviso da Floresta", "O Mensageiro se perdeu na mata. Tente novamente mais tarde.");
+            });
+    };
+        
+    // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
+    // ==========================================
+    const formRegister = document.getElementById('form-register');
+    if(formRegister) {
+        formRegister.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value; 
+            const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
+            
+            if (password !== confirmPassword) {
+                mostrarAlertaSeringal("O Mensageiro Recusou", "O Mensageiro do Seringal notou um erro: as senhas não coincidem!\nPor favor, digite a mesma senha nos dois campos.");
+                return; 
+            }
+            
+            const dobInput = document.getElementById('reg-dob').value;
+            if (dobInput.length < 10) {
+                mostrarAlertaSeringal("Faltam Dados", "O Mensageiro precisa saber a data correta do seu nascimento (Ex: 01/01/1990).");
+                return;
+            }
+            
+            const partes = dobInput.split('/');
+            const dob = new Date(partes[2], partes[1] - 1, partes[0]);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) { age--; }
+            
+            if (age < 18) {
+                mostrarAlertaSeringal("O Mensageiro Barrou Você", "O Seringal é implacável. Pelas leis da floresta, o cadastro é permitido apenas para maiores de 18 anos.");
+                return; 
+            }
+
+            mostrarAlertaSeringal("Registrando...", "O Mensageiro do Seringal está levando seus selos aos anciões...");
+
+            createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                sendEmailVerification(userCredential.user).then(() => {
+                    mostrarAlertaSeringal("Lenda Registrada!", "O Mensageiro do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Mensageiro acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
+                    formRegister.reset();
+                    document.getElementById('screen-registration').classList.add('hidden');
+                });
+            })
+            .catch((error) => {
+                if(error.code === 'auth/email-already-in-use') {
+                    mostrarAlertaSeringal("Já Conhecemos Você", "O Mensageiro do Seringal avisa: Este e-mail já pertence a uma lenda da mesa! Tente fazer Login.");
+                } else if (error.code === 'auth/weak-password') {
+                    mostrarAlertaSeringal("Defesa Fraca", "O Mensageiro alerta: Sua senha é muito fraca para proteger seus segredos na floresta. Use pelo menos 6 caracteres.");
+                } else {
+                    mostrarAlertaSeringal("Erro na Floresta", error.message);
+                }
+            });
+        });
+    }
+
+    // 2. MOTOR DE LOGIN OFICIAL
+    // ==========================================
+    const formLogin = document.getElementById('form-login');
+    if(formLogin) {
+        formLogin.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            mostrarAlertaSeringal("Analisando...", "O Mensageiro está conferindo seus selos de acesso na entrada do Seringal...");
+
+            signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                if(userCredential.user.emailVerified) {
+                    mostrarAlertaSeringal("Portões Abertos!", "O Mensageiro do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
+                    document.getElementById('screen-login').classList.add('hidden');
+                } else {
+                    sendEmailVerification(userCredential.user).then(() => {
+                        mostrarAlertaSeringal("Pergaminho Faltando!", "O Mensageiro do Seringal barrou a passagem: O seu pergaminho não foi assinado!\n\nEle acabou de enviar um NOVO aviso para o seu e-mail.\n\nVerifique sua caixa de entrada (e o Spam), confirme sua identidade e tente novamente.");
+                        auth.signOut();
+                    }).catch((error) => {
+                        mostrarAlertaSeringal("Calma, Lenda!", "O Mensageiro já enviou o seu pergaminho recentemente. Por favor, verifique o seu Spam/Lixo Eletrônico.");
+                        auth.signOut();
+                    });
+                }
+            })
+            .catch((error) => {
+                mostrarAlertaSeringal("Acesso Negado", "O Mensageiro do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
+            });
+        }); 
+    }
+</script>
 
     </div> 
 
