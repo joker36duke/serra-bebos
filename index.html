@@ -1820,7 +1820,7 @@ function confirmGuardian() {
 
                 alert("Verificando credenciais...");
 
-                // Pede permissão para o Firebase para entrar
+                                // Pede permissão para o Firebase para entrar
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     // Verifica se o jogador clicou no link do e-mail
@@ -1828,14 +1828,20 @@ function confirmGuardian() {
                         alert("Acesso Concedido!\nBem-vindo de volta ao Seringal!");
                         document.getElementById('screen-login').classList.add('hidden');
                     } else {
-                        alert("⚠️ E-mail não confirmado!\nPor favor, verifique sua caixa de entrada (ou lixo eletrônico) e clique no link antes de entrar.");
-                        auth.signOut(); // Chuta o jogador pra fora porque não confirmou
+                        // A MÁGICA ACONTECE AQUI: Envia um novo e-mail automaticamente!
+                        sendEmailVerification(userCredential.user).then(() => {
+                            alert("⚠️ E-mail ainda não confirmado!\n\nPercebemos que o seu link pode ter expirado ou se perdido. Acabamos de enviar um NOVO pergaminho de confirmação para o seu e-mail!\n\nVerifique sua caixa de entrada (e a aba de Spam), clique no novo link e tente entrar novamente.");
+                            auth.signOut(); // Desconecta até ele confirmar
+                        }).catch((error) => {
+                            // Se ele tentar clicar várias vezes seguidas, o Firebase bloqueia por segurança
+                            alert("⚠️ E-mail não confirmado! Já enviamos um link fresquinho para você agora pouco. Por favor, verifique o seu Spam/Lixo Eletrônico.");
+                            auth.signOut();
+                        });
                     }
                 })
                 .catch((error) => {
                     alert("Acesso Negado: E-mail ou senha incorretos.");
                 });
-            });
         }
     </script>
 
