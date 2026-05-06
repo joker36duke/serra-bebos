@@ -1717,8 +1717,8 @@ function confirmGuardian() {
         // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+            
         // Suas credenciais exclusivas do projeto
         const firebaseConfig = {
             apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
