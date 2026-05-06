@@ -1748,7 +1748,7 @@ function confirmGuardian() {
         
 </script>
 
-        <script type="module">
+            <script type="module">
         // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
@@ -1765,112 +1765,12 @@ function confirmGuardian() {
         // Inicializa o motor
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const auth = getAuth(app); // Liga a ignição da autenticação!
+        const auth = getAuth(app); 
 
         console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
+        // ==========================================
         // RECUPERAÇÃO DE SENHA
-        // ==========================================
-        window.recuperarSenha = function() {
-            const emailInput = document.getElementById('login-email').value.trim();
-            if (!emailInput) {
-                alert("Para recuperar a senha, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
-                return;
-            }
-            
-            alert("Enviando mensageiro da floresta... Aguarde.");
-            
-            sendPasswordResetEmail(auth, emailInput)
-                .then(() => {
-                    alert("Mensageiro enviado!\nEnviamos um link de recuperação para: " + emailInput + "\nCheque sua caixa de entrada ou spam.");
-                })
-                .catch((error) => {
-                    alert("Erro ao enviar: Talvez esta lenda não exista no Seringal ou o e-mail está errado.");
-                });
-        };
-            
-        // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
-        // ==========================================
-        const formRegister = document.getElementById('form-register');
-        if(formRegister) {
-            formRegister.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const email = document.getElementById('reg-email').value.trim();
-                const password = document.getElementById('reg-password').value;
-                const confirmPassword = document.getElementById('reg-confirm-password').value; // <-- PEGA A SENHA DE CONFIRMAÇÃO
-                const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
-                
-                // --- NOVA BLINDAGEM DE SENHA ---
-                if (password !== confirmPassword) {
-                    alert("As senhas não coincidem!\nPor favor, digite exatamente a mesma senha nos dois campos.");
-                    return; // Trava o cadastro se as senhas forem diferentes
-                }
-                
-                // Validação de Idade
-                const dobInput = document.getElementById('reg-dob').value;
-                if (dobInput.length < 10) {
-                    alert("Por favor, digite a data completa (Ex: 01/01/1990).");
-                    return;
-                }
-                const partes = dobInput.split('/');
-                const dob = new Date(partes[2], partes[1] - 1, partes[0]);
-                const today = new Date();
-                let age = today.getFullYear() - dob.getFullYear();
-                if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) { age--; }
-                
-                if (age < 18) {
-                    alert("ACESSO NEGADO:\nO Seringal é implacável. Cadastro permitido apenas para maiores de 18 anos.");
-                    return; 
-                }
-
-                alert("Invocando os espíritos da floresta... Aguarde.");
-
-                // Manda o Firebase criar a conta
-                createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Conta criada! Dispara o e-mail
-                    sendEmailVerification(userCredential.user).then(() => {
-                        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + ".\n\n⚠️ ATENÇÃO: Enviamos um pergaminho de confirmação para:\n" + email + "\n\nAbra seu e-mail e clique no link para validar seu acesso!");
-                        formRegister.reset();
-                        document.getElementById('screen-registration').classList.add('hidden');
-                    });
-                })
-                .catch((error) => {
-                    if(error.code === 'auth/email-already-in-use') {
-                        alert("Esse e-mail já pertence a uma lenda do Seringal! Tente fazer Login.");
-                    } else if (error.code === 'auth/weak-password') {
-                        alert("A senha é muito fraca. Use pelo menos 6 caracteres.");
-                    } else {
-                        alert("Erro na floresta: " + error.message);
-                    }
-                });
-            });
-        }
-
-        // 2. MOTOR DE LOGIN OFICIAL
-<script type="module">
-    // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-        
-    // Suas credenciais exclusivas do projeto
-    const firebaseConfig = {
-        apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
-        projectId: "serra-bebos",
-        storageBucket: "serra-bebos.firebasestorage.app",
-        databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
-    };
-
-    // Inicializa o motor
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const auth = getAuth(app); 
-
-    console.log("Motor do Firebase Ligado e Autenticação Pronta!");
-
-            // RECUPERAÇÃO DE SENHA
         // ==========================================
         window.recuperarSenha = function() {
             const emailInput = document.getElementById('login-email').value.trim();
@@ -1890,6 +1790,7 @@ function confirmGuardian() {
                 });
         };
             
+        // ==========================================
         // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
         // ==========================================
         const formRegister = document.getElementById('form-register');
@@ -1930,7 +1831,10 @@ function confirmGuardian() {
                     sendEmailVerification(userCredential.user).then(() => {
                         mostrarAlertaSeringal("Lenda Registrada!", "O Mensageiro do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Mensageiro acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
                         formRegister.reset();
+                        
+                        // Fecha a tela de cadastro e abre a de login silenciosamente por trás do alerta!
                         document.getElementById('screen-registration').classList.add('hidden');
+                        document.getElementById('screen-login').classList.remove('hidden');
                     });
                 })
                 .catch((error) => {
@@ -1945,6 +1849,7 @@ function confirmGuardian() {
             });
         }
 
+        // ==========================================
         // 2. MOTOR DE LOGIN OFICIAL
         // ==========================================
         const formLogin = document.getElementById('form-login');
@@ -1959,8 +1864,8 @@ function confirmGuardian() {
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     if(userCredential.user.emailVerified) {
-                        mostrarAlertaSeringal("Portões Abertos!", "O Mensageiro do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
                         document.getElementById('screen-login').classList.add('hidden');
+                        mostrarAlertaSeringal("Portões Abertos!", "O Mensageiro do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
                     } else {
                         sendEmailVerification(userCredential.user).then(() => {
                             mostrarAlertaSeringal("Pergaminho Faltando!", "O Mensageiro do Seringal barrou a passagem: O seu pergaminho não foi assinado!\n\nEle acabou de enviar um NOVO aviso para o seu e-mail.\n\nVerifique sua caixa de entrada (e o Spam), confirme sua identidade e tente novamente.");
