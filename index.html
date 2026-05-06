@@ -1116,12 +1116,15 @@ btnPopo.classList.add('animate-pulse');
                     void cUI.offsetWidth; // Trigger reflow
                     cUI.classList.add('invalid-shake');
                     
-                    const trunfadaUi = document.getElementById('trunfada-ui');
-                    trunfadaUi.innerText = "OBRIGATÓRIO JOGAR TRUNFO/BEBO!";
+                                        const trunfadaUi = document.getElementById('trunfada-ui');
+                    const trunfadaText = document.getElementById('trunfada-text');
+                    
+                    trunfadaText.innerHTML = "OBRIGATÓRIO<br>JOGAR<br>TRUNFO!";
                     trunfadaUi.classList.add('trunfada-alert');
+                    
                     setTimeout(() => {
                         trunfadaUi.classList.remove('trunfada-alert');
-                        trunfadaUi.innerText = "TRUNFADA ATIVA";
+                        trunfadaText.innerHTML = "TRUNFADA<br>ATIVA";
                     }, 1500);
                     
                     return; // Impede a jogada
