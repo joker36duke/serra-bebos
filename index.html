@@ -1734,6 +1734,27 @@ function confirmGuardian() {
 
         console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
+                    // ==========================================
+        // RECUPERAÇÃO DE SENHA
+        // ==========================================
+        window.recuperarSenha = function() {
+            const emailInput = document.getElementById('login-email').value.trim();
+            if (!emailInput) {
+                alert("Para recuperar a senha, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
+                return;
+            }
+            
+            alert("Enviando mensageiro da floresta... Aguarde.");
+            
+            sendPasswordResetEmail(auth, emailInput)
+                .then(() => {
+                    alert("Mensageiro enviado!\nEnviamos um link de recuperação para: " + emailInput + "\nCheque sua caixa de entrada ou spam.");
+                })
+                .catch((error) => {
+                    alert("Erro ao enviar: Talvez esta lenda não exista no Seringal ou o e-mail está errado.");
+                });
+        };
+            
         // ==========================================
         // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
         // ==========================================
