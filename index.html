@@ -1649,48 +1649,6 @@ function confirmGuardian() {
         document.getElementById('screen-registration').classList.remove('hidden');
     }
 
-        // Processar formulário e validar idade (18+)
-        const dobInput = document.getElementById('reg-dob').value;
-        if (dobInput.length < 10) {
-            alert("Por favor, digite a data de nascimento completa (Ex: 01/01/1990).");
-            return;
-        }
-
-        // Divide a data digitada (DD/MM/AAAA) para o sistema calcular
-        const partes = dobInput.split('/');
-        const dia = parseInt(partes[0], 10);
-        const mes = parseInt(partes[1], 10) - 1; // O mês no código começa no zero
-        const ano = parseInt(partes[2], 10);
-        
-        const dob = new Date(ano, mes, dia);
-        const today = new Date();
-        
-        // Calcula a idade
-        let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        
-        // Ajusta se o aniversário ainda não chegou no ano atual
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-            age--;
-        }
-
-        // Barra menores de 18
-        if (age < 18) {
-            alert("ACESSO NEGADO:\nO Seringal é implacável. Cadastro permitido apenas para maiores de 18 anos.");
-            return; 
-        }
-
-        // Se passou da idade, junta o nome e dá boas-vindas com o aviso do E-mail
-        const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
-        const emailDigitado = document.getElementById('reg-email').value.trim();
-        
-        alert("Lenda Registrada!\nBem-vindo, " + nomeGuerra + " (" + age + " anos).\n\n⚠️ ATENÇÃO: Enviamos um pergaminho de confirmação para:\n" + emailDigitado + "\n\nPor favor, confirme seu e-mail para ativar o seu acesso ao Seringal!");
-        
-        // Limpa o formulário e fecha a tela
-        this.reset();
-        closeRegistrationScreen();
-    });
-
       // Funções para a Tela de Login
     function openLoginScreen() {
         document.getElementById('screen-login').classList.remove('hidden');
