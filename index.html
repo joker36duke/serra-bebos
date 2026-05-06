@@ -631,7 +631,7 @@
                        class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]">
             </div>
 
-            <div class="flex flex-col">
+                        <div class="flex flex-col">
                 <label for="reg-password" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">Senha</label>
                 <div class="relative w-full">
                     <input type="password" id="reg-password" placeholder="********" required
@@ -643,6 +643,21 @@
                         </svg>
                     </button>
                 </div>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="reg-confirm-password" class="font-cinzel text-[#d4af37] text-sm font-bold tracking-wider mb-1">Confirmar Senha</label>
+                <div class="relative w-full">
+                    <input type="password" id="reg-confirm-password" placeholder="********" required
+                           class="w-full bg-black border border-[#d4af37]/50 rounded px-4 py-2 pr-12 text-white font-cinzel focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]">
+                    <button type="button" onclick="toggleConfirmPasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#d4af37]/70 hover:text-[#d4af37] focus:outline-none">
+                        <svg id="eye-icon-confirm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
             </div>
 
             <div class="flex flex-col gap-3 mt-4">
