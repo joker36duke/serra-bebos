@@ -1769,7 +1769,6 @@ function confirmGuardian() {
 
         console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
-                    // ==========================================
         // RECUPERAÇÃO DE SENHA
         // ==========================================
         window.recuperarSenha = function() {
@@ -1790,7 +1789,6 @@ function confirmGuardian() {
                 });
         };
             
-        // ==========================================
         // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
         // ==========================================
         const formRegister = document.getElementById('form-register');
@@ -1800,7 +1798,14 @@ function confirmGuardian() {
                 
                 const email = document.getElementById('reg-email').value.trim();
                 const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value; // <-- PEGA A SENHA DE CONFIRMAÇÃO
                 const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
+                
+                // --- NOVA BLINDAGEM DE SENHA ---
+                if (password !== confirmPassword) {
+                    alert("As senhas não coincidem!\nPor favor, digite exatamente a mesma senha nos dois campos.");
+                    return; // Trava o cadastro se as senhas forem diferentes
+                }
                 
                 // Validação de Idade
                 const dobInput = document.getElementById('reg-dob').value;
@@ -1843,7 +1848,6 @@ function confirmGuardian() {
             });
         }
 
-        // ==========================================
         // 2. MOTOR DE LOGIN OFICIAL
         // ==========================================
         const formLogin = document.getElementById('form-login');
