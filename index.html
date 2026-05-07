@@ -1775,6 +1775,12 @@ function confirmGuardian() {
         document.getElementById('screen-info-signup').classList.add('hidden'); // Esconde a tela preta
         clicarJogarAgora(); // Dispara o jogo (vídeo da adega, buzina, etc.)
     }
+    
+    // FUNÇÃO PARA SAIR DO LOBBY (DESLOGAR)
+    function sairDoLobby() {
+        // Recarrega a página para deslogar e voltar à estaca zero
+        location.reload();
+    }
 
     // Alternar visibilidade da senha no LOGIN (Olhinho)
     function toggleLoginPasswordVisibility() {
