@@ -745,7 +745,49 @@
             </div>
         </div>
         </div>
-    
+
+        <div id="screen-lobby" class="screen hidden transparent relative w-full h-full bg-black">
+        <img src="fundoseringal.png" alt="Fundo Lobby" class="absolute inset-0 w-full h-full object-cover object-center opacity-30 z-0">
+        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 w-full">
+            
+            <h2 class="font-cinzel font-black text-3xl md:text-4xl text-[#d4af37] tracking-widest uppercase mb-2 drop-shadow-lg text-center">
+                O Grande Tribunal
+            </h2>
+            <p class="font-cinzel text-white/80 text-sm md:text-base mb-10 text-center max-w-md">
+                Bem-vindo ao online, <strong id="lobby-player-name" class="text-[#22c55e]">Lenda</strong>. Escolha sua mesa e enfrente guardiões de todo o Seringal.
+            </p>
+
+            <div class="w-full max-w-sm flex flex-col gap-4">
+                <button onclick="mostrarAlertaSeringal('Aguarde, Lenda', 'As mesas de 1x1 estão sendo polidas pelos anciões. Volte em breve!')" class="group relative w-full bg-[#1a0f0a]/90 border-2 border-[#d4af37] rounded-lg p-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] hover:bg-[#3d1f14] hover:scale-105 transition-all active:scale-95">
+                    <div class="flex flex-col text-left">
+                        <span class="font-cinzel font-black text-xl text-[#d4af37] tracking-widest">DUELO 1x1</span>
+                        <span class="font-inter text-xs text-white/60 uppercase">Você contra um oponente</span>
+                    </div>
+                    <span class="text-[#ef4444] font-black text-3xl group-hover:scale-110 transition-transform">⚔️</span>
+                </button>
+
+                <button onclick="mostrarAlertaSeringal('Aguarde, Lenda', 'As alianças para 2x2 estão sendo forjadas na mata. Volte em breve!')" class="group relative w-full bg-[#1a0f0a]/90 border-2 border-[#d4af37] rounded-lg p-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] hover:bg-[#3d1f14] hover:scale-105 transition-all active:scale-95">
+                    <div class="flex flex-col text-left">
+                        <span class="font-cinzel font-black text-xl text-[#d4af37] tracking-widest">DUPLAS 2x2</span>
+                        <span class="font-inter text-xs text-white/60 uppercase">Trabalho em equipe</span>
+                    </div>
+                    <span class="text-[#3b82f6] font-black text-3xl group-hover:scale-110 transition-transform">🛡️</span>
+                </button>
+
+                <button onclick="mostrarAlertaSeringal('Aguarde, Lenda', 'A guerra total de 3x3 requer uma arena maior. Em breve!')" class="group relative w-full bg-[#1a0f0a]/90 border-2 border-[#d4af37] rounded-lg p-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] hover:bg-[#3d1f14] hover:scale-105 transition-all active:scale-95">
+                    <div class="flex flex-col text-left">
+                        <span class="font-cinzel font-black text-xl text-[#d4af37] tracking-widest">TRIOS 3x3</span>
+                        <span class="font-inter text-xs text-white/60 uppercase">Guerra de Clãs</span>
+                    </div>
+                    <span class="text-[#22c55e] font-black text-3xl group-hover:scale-110 transition-transform">🔥</span>
+                </button>
+            </div>
+            
+            <button onclick="sairDoLobby()" class="mt-8 py-2 px-8 font-bold text-sm tracking-wider rounded border border-red-900 text-red-500 uppercase transition-transform active:scale-95 hover:bg-red-900/10">
+                Sair da Conta
+            </button>
+        </div>
+    </div>
 
     <script>
         // --- CONSTANTES DO JOGO ---
