@@ -1903,21 +1903,23 @@ function confirmGuardian() {
 
                 mostrarAlertaSeringal("Analisando...", "O Bebo-Mor está conferindo seus selos de acesso na entrada do Seringal...");
 
+                // 3. ENTRADA NO LOBBY APÓS LOGIN (SUCESSO)
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     if(userCredential.user.emailVerified) {
+                        // Fecha o modal de login
                         document.getElementById('screen-login').classList.add('hidden');
-                        mostrarAlertaSeringal("Portões Abertos!", "O Bebo-Mor do Seringal reconhece a sua marca.\n\nBem-vindo de volta à mesa!");
+                        
+                        // Pega o nome do email (antes do @) para colocar na tela
+                        let nomeJogador = userCredential.user.email.split('@')[0].toUpperCase();
+                        document.getElementById('lobby-player-name').innerText = nomeJogador;
+                        
+                        // Transição da Tela Inicial para o Lobby
+                        navTo('screen-start', 'screen-lobby');
+                        
+                        mostrarAlertaSeringal("Portões Abertos!", "O Bebor-Mor reconhece a sua marca.\n\nBem-vindo ao Grande Tribunal, " + nomeJogador + "!");
                     } else {
-                        sendEmailVerification(userCredential.user).then(() => {
-                            mostrarAlertaSeringal("Pergaminho Faltando!", "O Bebo-Mor do Seringal barrou a passagem: O seu pergaminho não foi assinado!\n\nEle acabou de enviar um NOVO aviso para o seu e-mail.\n\nVerifique sua caixa de entrada (e o Spam), confirme sua identidade e tente novamente.");
-                            auth.signOut();
-                        }).catch((error) => {
-                            mostrarAlertaSeringal("Calma, Lenda!", "O Bebo-Mor já enviou o seu pergaminho recentemente. Por favor, verifique o seu Spam/Lixo Eletrônico.");
-                            auth.signOut();
-                        });
-                    }
-                })
+                        
                 .catch((error) => {
                     mostrarAlertaSeringal("Acesso Negado", "O Bebor-Mor do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
                 });
