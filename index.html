@@ -1897,40 +1897,48 @@ function confirmGuardian() {
             });
         }
 
-        // ==========================================
-        // 2. MOTOR DE LOGIN OFICIAL
-        // ==========================================
+        // 2. MOTOR DE LOGIN OFICIAL (TRIBUNAL)
         const formLogin = document.getElementById('form-login');
         if(formLogin) {
             formLogin.addEventListener('submit', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Impede o recarregamento da página
+                
                 const email = document.getElementById('login-email').value.trim();
                 const password = document.getElementById('login-password').value;
 
                 mostrarAlertaSeringal("Analisando...", "O Bebo-Mor está conferindo seus selos de acesso na entrada do Seringal...");
 
-                // 3. ENTRADA NO LOBBY APÓS LOGIN (SUCESSO)
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    if(userCredential.user.emailVerified) {
-                        // Fecha o modal de login
+                    const user = userCredential.user;
+                    
+                    if(user.emailVerified) {
+                        // 1. Fecha o login
                         document.getElementById('screen-login').classList.add('hidden');
                         
-                        // Pega o nome do email (antes do @) para colocar na tela
-                        let nomeJogador = userCredential.user.email.split('@')[0].toUpperCase();
+                        // 2. Prepara o nome do jogador
+                        let nomeJogador = user.email.split('@')[0].toUpperCase();
                         document.getElementById('lobby-player-name').innerText = nomeJogador;
                         
-                        // Transição da Tela Inicial para o Lobby
+                        // 3. Vai para o Lobby
                         navTo('screen-start', 'screen-lobby');
                         
-                        mostrarAlertaSeringal("Portões Abertos!", "O Bebor-Mor reconhece a sua marca.\n\nBem-vindo ao Grande Tribunal, " + nomeJogador + "!");
+                        mostrarAlertaSeringal("Portões Abertos!", "O Bebo-Mor reconhece a sua marca.\n\nBem-vindo ao Grande Tribunal, " + nomeJogador + "!");
                     } else {
-                        
+                        // Caso o e-mail não tenha sido verificado
+                        sendEmailVerification(user).then(() => {
+                            mostrarAlertaSeringal("Pergaminho Faltando!", "O Bebo-Mor barrou a passagem: O seu pergaminho não foi assinado!\n\nVerifique seu e-mail para confirmar sua identidade.");
+                            auth.signOut();
+                        });
+                    }
+                })
                 .catch((error) => {
-                    mostrarAlertaSeringal("Acesso Negado", "O Bebor-Mor do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
+                    // Trata erro de senha ou e-mail incorretos
+                    mostrarAlertaSeringal("Acesso Negado", "O Bebo-Mor do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
                 });
             }); 
         }
+                
     </script>
 
     </div> 
