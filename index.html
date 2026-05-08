@@ -1880,13 +1880,17 @@ function confirmGuardian() {
 
                 createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    sendEmailVerification(userCredential.user).then(() => {
-                        mostrarAlertaSeringal("Lenda Registrada!", "O Bebo-Mor do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Bebo-Mor acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
-                        formRegister.reset();
-                        
-                        // Fecha a tela de cadastro e abre a de login silenciosamente por trás do alerta!
-                        document.getElementById('screen-registration').classList.add('hidden');
-                        document.getElementById('screen-login').classList.remove('hidden');
+                    // SALVA O NOME E O AVATAR NO FIREBASE
+                    updateProfile(userCredential.user, {
+                        displayName: nomeGuerra
+                    }).then(() => {
+                        sendEmailVerification(userCredential.user).then(() => {
+                            mostrarAlertaSeringal("Lenda Registrada!", "O Bebo-Mor do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Bebo-Mor acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
+                            formRegister.reset();
+                            
+                            document.getElementById('screen-registration').classList.add('hidden');
+                            document.getElementById('screen-login').classList.remove('hidden');
+                        });
                     });
                 })
                 .catch((error) => {
