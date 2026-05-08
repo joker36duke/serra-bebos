@@ -746,12 +746,17 @@
         </div>
         </div>
 
-        <div id="screen-lobby" class="screen hidden transparent relative w-full h-full bg-black">
+            <div id="screen-lobby" class="screen hidden transparent relative w-full h-full bg-black">
         <img src="fundoseringal.png" alt="Fundo Lobby" class="absolute inset-0 w-full h-full object-cover object-center opacity-30 z-0">
-        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 w-full">
+        
+        <button onclick="mostrarAlertaSeringal('Adega do Mestre', 'O Ranking dos Guardiões está sendo polido. Em breve você verá quem domina o Seringal!')" class="absolute top-6 right-6 z-50 bg-[#3d1f14]/80 border border-[#d4af37] text-[#d4af37] font-cinzel font-bold text-[10px] tracking-widest uppercase px-4 py-2 rounded shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:bg-[#d4af37] hover:text-white transition-all active:scale-95">
+            Adega do Mestre
+        </button>
+
+        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 w-full mt-6">
             
             <h2 class="font-cinzel font-black text-3xl md:text-4xl text-[#d4af37] tracking-widest uppercase mb-2 drop-shadow-lg text-center">
-                O Grande Tribunal
+                O Grande Serra
             </h2>
             <p class="font-cinzel text-white/80 text-sm md:text-base mb-10 text-center max-w-md">
                 Bem-vindo ao online, <strong id="lobby-player-name" class="text-[#22c55e]">Lenda</strong>. Escolha sua mesa e enfrente guardiões de todo o Seringal.
