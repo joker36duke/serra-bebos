@@ -1842,9 +1842,7 @@ function confirmGuardian() {
                 });
         };
             
-        // ==========================================
         // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
-        // ==========================================
         const formRegister = document.getElementById('form-register');
         if(formRegister) {
             formRegister.addEventListener('submit', function(e) {
@@ -1946,6 +1944,59 @@ function confirmGuardian() {
                 });
             }); 
         }
+
+        // 3. MOTOR DE MATCHMAKING (DUELO 1x1)
+        window.buscarPartida1x1 = function() {
+            const user = auth.currentUser;
+            if (!user) {
+                mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login novamente.");
+                return;
+            }
+
+            let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO DESCONHECIDO";
+            mostrarAlertaSeringal("Entrando na Mata...", "Aguarde, " + nomeJogador + "...\n\nO Seringal está buscando um oponente à sua altura...");
+
+            const filaRef = ref(database, 'filaEspera1v1');
+
+            // Olha para ver se tem alguém na fila
+            get(filaRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // TEM ALGUÉM LÁ! Vamos conectar com ele
+                    const oponente = snapshot.val();
+                    
+                    // Impede de você jogar contra você mesmo (caso clique duas vezes)
+                    if (oponente.uid === user.uid) {
+                        mostrarAlertaSeringal("Já na Fila", "Você já está aguardando um oponente na mesa!");
+                        return;
+                    }
+
+                    mostrarAlertaSeringal("Adversário Encontrado!", "A mata tremeu!\nVocê vai enfrentar: " + oponente.nome + "\n\n(A lógica de distribuir as cartas será nosso próximo passo!)");
+                    
+                    // Limpa a fila para não entrar uma 3ª pessoa
+                    remove(filaRef);
+
+                } else {
+                    // NÃO TEM NINGUÉM! Você é o primeiro. Senta e espera.
+                    set(filaRef, {
+                        uid: user.uid,
+                        nome: nomeJogador
+                    });
+                    
+                    mostrarAlertaSeringal("Dono da Mesa", "Ainda não há adversários...\n\nVocê sentou na mesa. Aguardando um desafiante se conectar ao Seringal...");
+
+                    // O Seringal avisa você quando alguém limpar a fila (ou seja, quando alguém entrar)
+                    onValue(filaRef, (snap) => {
+                        if (!snap.exists()) {
+                            mostrarAlertaSeringal("Desafiante Chegou!", "Um oponente sentou à sua mesa!\n\n(A lógica de distribuir as cartas será nosso próximo passo!)");
+                        }
+                    });
+                }
+            }).catch((error) => {
+                console.error(error);
+                mostrarAlertaSeringal("Aviso da Floresta", "As nuvens cobriram o Seringal. Erro de conexão.");
+            });
+        };
+    
     </script>
 
     </div> 
