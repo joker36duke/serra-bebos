@@ -833,9 +833,24 @@
             <div id="screen-lobby" class="screen hidden transparent relative w-full h-full bg-black">
         <img src="fundoseringal.png" alt="Fundo Lobby" class="absolute inset-0 w-full h-full object-cover object-center opacity-30 z-0">
         
-        <button onclick="mostrarAlertaSeringal('Adega do Mestre', 'O Ranking dos Guardiões está sendo polido. Em breve você verá quem domina o Seringal!')" class="absolute top-6 right-6 z-50 bg-[#3d1f14]/80 border border-[#d4af37] text-[#d4af37] font-cinzel font-bold text-[10px] tracking-widest uppercase px-4 py-2 rounded shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:bg-[#d4af37] hover:text-white transition-all active:scale-95">
-            Adega do Mestre
-        </button>
+        <div class="absolute top-6 left-6 z-50 flex gap-3">
+    <button onclick="mostrarAlertaSeringal('Closet da Dalila', 'O ranking das lendas está sendo organizado pela Dalila!')" 
+            class="btn-movel estilo-dalila">
+        <span class="text-2xl">🧥</span>
+        Closet da<br>Dalila
+    </button>
+
+    <button onclick="mostrarAlertaSeringal('Estante do Sansão', 'O Sansão está separando as melhores safras de El Dionysos!')" 
+            class="btn-movel estilo-sansao">
+        <span class="text-2xl">🍷</span>
+        Estante do<br>Sansão
+    </button>
+</div>
+
+<button onclick="mostrarAlertaSeringal('Adega do Mestre', 'Sua adega particular está maturando em silêncio...')" 
+        class="absolute top-6 right-6 z-50 bg-[#3d1f14]/80 border border-[#d4af37] text-[#d4af37] font-cinzel font-bold text-[10px] tracking-widest uppercase px-4 py-2 rounded shadow-[0_0_15px_rgba(212,175,55,0.2)] h-[82px] w-[90px] flex items-center justify-center text-center">
+    Adega do<br>Mestre
+</button>
 
         <div class="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 w-full mt-6">
             
