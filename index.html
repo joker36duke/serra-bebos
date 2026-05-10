@@ -357,79 +357,65 @@
         <script>
     // A mágica nova: Espera o HTML inteiro ser lido antes de começar a contar!
     window.addEventListener('DOMContentLoaded', () => {
-    // 1. Identificamos todos os elementos que precisam ser baixados
-    const images = document.querySelectorAll('img');
-    const audio = document.querySelectorAll('audio');
-    const videoIntro = document.querySelector('video source') ? document.querySelector('video') : null;
-    
-    // Contagem total para a barra de porcentagem
-    const totalAssets = images.length + audio.length + (videoIntro ? 1 : 0);
-    let loadedAssets = 0;
-
-    const percentText = document.getElementById('loading-percentage');
-    const screenLoader = document.getElementById('screen-loader');
-    const screenStart = document.getElementById('screen-start');
-
-    function registrarArquivoCarregado() {
-        loadedAssets++;
-        let percentage = Math.floor((loadedAssets / totalAssets) * 100);
-        if (percentText) percentText.innerText = percentage + '%';
-
-        // Quando tudo (inclusive o vídeo de 8s) baixar, libera o jogo
-        if (loadedAssets >= totalAssets) {
-            finalizarCarregamento();
-        }
-    }
-
-    function finalizarCarregamento() {
-        if (percentText) percentText.innerText = '100%';
-        setTimeout(() => {
-            screenLoader.classList.add('transparent');
-            setTimeout(() => {
-                screenLoader.classList.add('hidden');
-                if (screenStart) screenStart.classList.remove('hidden', 'transparent');
-            }, 600);
-        }, 500);
-    }
-
-    // --- DOWNLOAD DAS IMAGENS ---
-    images.forEach(img => {
-        if (img.complete) registrarArquivoCarregado();
-        else {
-            img.addEventListener('load', registrarArquivoCarregado);
-            img.addEventListener('error', registrarArquivoCarregado);
-        }
-    });
-
-    // --- DOWNLOAD DOS SONS ---
-    audio.forEach(snd => {
-        snd.addEventListener('canplaythrough', registrarArquivoCarregado, { once: true });
-        snd.addEventListener('error', registrarArquivoCarregado);
-    });
-
-    // --- DOWNLOAD DO VÍDEO DE 8 SEGUNDOS (O Pulo do Gato) ---
-    if (videoIntro && videoIntro.querySelector('source')) {
-        const videoSrc = videoIntro.querySelector('source').src;
         
-        fetch(videoSrc)
-            .then(response => response.blob())
-            .then(blob => {
-                // Cria um link interno para o vídeo que agora está na memória RAM
-                const videoUrl = URL.createObjectURL(blob);
-                videoIntro.src = videoUrl;
-                videoIntro.load(); // Avisa ao player que o arquivo mudou
-                registrarArquivoCarregado();
-            })
-            .catch(() => {
-                // Se o download do vídeo falhar, não travamos o jogo
-                registrarArquivoCarregado();
+        const mediaElements = document.querySelectorAll('img, video, audio');
+        const totalAssets = mediaElements.length;
+        let loadedAssets = 0;
+
+        const percentText = document.getElementById('loading-percentage');
+        const screenLoader = document.getElementById('screen-loader');
+        const screenStart = document.getElementById('screen-start');
+
+        function finalizarCarregamento() {
+            if (percentText) percentText.innerText = '100%';
+            
+            setTimeout(() => {
+                screenLoader.classList.add('transparent');
+                setTimeout(() => {
+                    screenLoader.classList.add('hidden');
+                    // Agora a screenStart existe na memória e vai aparecer!
+                    if (screenStart) {
+                        screenStart.classList.remove('hidden', 'transparent');
+                    }
+                }, 600); 
+            }, 500);
+        }
+
+        function registrarArquivoCarregado() {
+            loadedAssets++;
+            
+            if (totalAssets > 0) {
+                let percentage = Math.floor((loadedAssets / totalAssets) * 100);
+                if (percentText) percentText.innerText = percentage + '%';
+            }
+
+            if (loadedAssets >= totalAssets) {
+                finalizarCarregamento();
+            }
+        }
+
+        if (totalAssets === 0) {
+            finalizarCarregamento();
+        } else {
+            mediaElements.forEach(asset => {
+                if (asset.complete || asset.readyState >= 3) {
+                    registrarArquivoCarregado();
+                } else {
+                    asset.addEventListener('load', registrarArquivoCarregado);
+                    asset.addEventListener('canplaythrough', registrarArquivoCarregado);
+                    asset.addEventListener('error', registrarArquivoCarregado);
+                }
             });
-    }
+        }
 
-    // Segurança: 20 segundos de limite para não ficar preso no loading
-    setTimeout(() => { if (loadedAssets < totalAssets) finalizarCarregamento(); }, 20000);
-});
+        // Plano de Segurança: Destrava a tela em 15 segundos se a internet cair
+        setTimeout(() => {
+            if (loadedAssets < totalAssets) {
+                finalizarCarregamento();
+            }
+        }, 15000);
 
+    });
 </script>
 
     </div>
