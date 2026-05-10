@@ -321,24 +321,77 @@
         </div>
 
         <script>
-            // Mantemos apenas a lógica da barra de porcentagem
-            let percent = 0;
-            let countInterval = setInterval(() => {
-                percent++;
-                let percentText = document.getElementById('loading-percentage');
-                if (percentText) percentText.innerText = percent + '%';
-                if (percent >= 100) clearInterval(countInterval);
-            }, 85);
+    // 1. O JavaScript procura TODAS as imagens, vídeos e áudios do seu jogo
+    const mediaElements = document.querySelectorAll('img, video, audio');
+    const totalAssets = mediaElements.length;
+    let loadedAssets = 0;
 
-            // Mantemos a transição automática para a Tela Inicial após 9 segundos
+    const percentText = document.getElementById('loading-percentage');
+    const screenLoader = document.getElementById('screen-loader');
+    const screenStart = document.getElementById('screen-start');
+
+    // Função que libera o jogo quando chega a 100%
+    function finalizarCarregamento() {
+        // Garante que mostre 100%
+        if (percentText) percentText.innerText = '100%';
+        
+        // Dá um respiro de meio segundo e abre a cortina
+        setTimeout(() => {
+            screenLoader.classList.add('transparent');
             setTimeout(() => {
-                document.getElementById('screen-loader').classList.add('hidden', 'transparent');
-                let telaStart = document.getElementById('screen-start');
-                if (telaStart) {
-                    telaStart.classList.remove('hidden', 'transparent');
+                screenLoader.classList.add('hidden');
+                if (screenStart) {
+                    screenStart.classList.remove('hidden', 'transparent');
                 }
-            }, 9000);
-        </script>
+            }, 600); // Tempo da transição do CSS
+        }, 500);
+    }
+
+    // Função chamada toda vez que um arquivo termina de baixar
+    function registrarArquivoCarregado() {
+        loadedAssets++;
+        
+        // Calcula a porcentagem real
+        let percentage = Math.floor((loadedAssets / totalAssets) * 100);
+        if (percentText) percentText.innerText = percentage + '%';
+
+        // Se baixou tudo, inicia o jogo
+        if (loadedAssets >= totalAssets) {
+            finalizarCarregamento();
+        }
+    }
+
+    // Se por acaso não houver nenhuma mídia no jogo (improvável), inicia direto
+    if (totalAssets === 0) {
+        finalizarCarregamento();
+    } else {
+        // 2. Passa por cada arquivo e cria um "vigia" para saber quando ele baixou
+        mediaElements.forEach(asset => {
+            // Verifica se o arquivo já estava no cache do navegador e carregou instantaneamente
+            if (asset.complete || asset.readyState >= 3) {
+                registrarArquivoCarregado();
+            } else {
+                // Se ainda está baixando, avisa quando terminar
+                asset.addEventListener('load', registrarArquivoCarregado); // Para imagens
+                asset.addEventListener('canplaythrough', registrarArquivoCarregado); // Para vídeos e áudios
+                
+                // CUIDADO DE SEGURANÇA: Se um arquivo der erro (link quebrado), 
+                // pulamos ele para o jogo não ficar travado para sempre no loading
+                asset.addEventListener('error', registrarArquivoCarregado); 
+            }
+        });
+    }
+
+    // 3. PLANO B (Segurança Adicional)
+    // Se a internet do jogador for absurdamente lenta e travar em algum arquivo, 
+    // forçamos a abertura da tela inicial após 15 segundos para não frustrá-lo.
+    setTimeout(() => {
+        if (loadedAssets < totalAssets) {
+            finalizarCarregamento();
+        }
+    }, 15000); 
+</script>
+
     </div>
 
 
