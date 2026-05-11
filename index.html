@@ -287,7 +287,7 @@
     color: #22c55e;
 }
 
-    /* --- CONFIGURAÇÃO DO ECRÃ VIRTUAL PARA PC --- */
+    /* --- CONFIGURAÇÃO DO ECRÃ VIRTUAL INTELIGENTE --- */
 .phone-wrapper {
     width: 100%;
     height: 100%;
@@ -300,13 +300,23 @@
 
 .phone-screen {
     width: 100%;
-    height: 100%;
-    max-width: 432px; 
-    max-height: 768px; /* Esta altura garante a proporção exata de 1080x1920 */
+    height: 100%; /* No seu Moto G35, ele vai usar 100% da altura disponível */
     position: relative;
     overflow: hidden;
     background-color: #000;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+    display: flex;
+    flex-direction: column;
+}
+
+/* Esta parte abaixo só "desperta" quando o jogo abre num PC (monitor largo) */
+@media (min-width: 1024px) {
+    .phone-screen {
+        max-width: 432px; 
+        max-height: 768px; /* A trava de altura só existirá no computador */
+        border-radius: 20px; 
+        box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        border: 4px solid #1a1a1a;
+    }
 }
         
         
