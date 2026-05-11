@@ -322,9 +322,23 @@
         </style>
 </head>
 
+</head>
+
 <body class="bg-[#121212] flex items-center justify-center h-screen overflow-hidden m-0 w-full relative">
 
-        <div class="hidden lg:flex flex-col w-[320px] h-[90vh] max-h-[850px] bg-[#0a192f] border-2 border-[#fbbf24] rounded-2xl mr-8 p-6 shadow-[0_0_25px_rgba(251,191,36,0.15)]">
+    <button id="btn-fullscreen" onclick="toggleFullscreen()" class="fixed top-2 right-2 z-[9999] bg-[#1a0f0a]/80 border border-[#d4af37] text-[#d4af37] p-2 rounded-md shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:bg-[#d4af37] hover:text-[#1a0f0a] transition-colors flex items-center justify-center cursor-pointer backdrop-blur-sm">
+        
+        <svg id="icon-expand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+        </svg>
+
+        <svg id="icon-compress" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+        </svg>
+    </button>
+
+    <div class="hidden lg:flex flex-col w-[320px] h-[90vh] max-h-[850px] bg-[#0a192f] border-2 border-[#fbbf24] rounded-2xl mr-8 p-6 shadow-[0_0_25px_rgba(251,191,36,0.15)]">
+
         <h2 class="text-[#fbbf24] font-cinzel font-black text-xl text-center mb-6 tracking-[2px] uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)]">
             O Closet da Dalila
             <span class="block text-[10px] text-blue-400 mt-1">Ranking de Guardiões</span>
