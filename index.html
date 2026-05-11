@@ -422,28 +422,27 @@
 
 
     <!-- TELA 1: INÍCIO -->
-                <div id="screen-start" class="screen hidden transparent relative w-full h-full bg-black">
-    <audio id="som-botoes" src="gurgel.mp3"></audio>
-    <img src="telaincial.png" alt="Castelo de El Dionysos" class="absolute inset-0 w-full h-full object-cover object-center">
-    
-                <div class="absolute inset-x-0 bottom-[14%] sm:bottom-[12%] flex justify-center px-6 z-50">
+             <div id="screen-start" class="screen hidden transparent relative w-full h-full bg-black">
+        <audio id="som-botoes" src="gurgel.mp3"></audio>
         
-        <div class="flex flex-col w-full max-w-[240px] gap-3 p-2 bg-black/40 border border-[#d4af37]/50 rounded-lg backdrop-blur-sm shadow-2xl transform -translate-x-7">
-            
-                          <button onclick="tocarSomBotao(); openLoginScreen();" 
-                class="w-full h-[40px] bg-[#1a0b12] border-2 border-[#d4af37] text-white font-cinzel font-black tracking-[3px] uppercase rounded-md shadow-lg hover:bg-[#d4af37] hover:text-black transition-colors cursor-pointer text-sm">
-                Login
-            </button>
-            
-                        <button onclick="clicarJogarAgora()" 
-                class="w-full h-[40px] bg-[#722f1b] border-2 border-[#d4af37] text-white font-cinzel font-black tracking-[3px] uppercase rounded-md shadow-[0_4px_10px_rgba(0,0,0,0.6)] hover:bg-[#d4af37] hover:text-[#722f1b] transition-colors cursor-pointer text-sm">
-                Jogar Agora
-            </button>
-            
+        <img src="telaincial.png" alt="Castelo de El Dionysos" class="absolute inset-0 w-full h-full object-cover object-bottom z-0">
+        
+        <div class="absolute inset-x-0 bottom-[14%] sm:bottom-[12%] flex justify-center px-6 z-50">
+            <div class="flex flex-col w-full max-w-[240px] gap-3 p-2 bg-black/40 border border-[#d4af37]/50 rounded-lg backdrop-blur-sm shadow-2xl transform -translate-x-7">
+                
+                <button onclick="tocarSomBotao(); openLoginScreen();" 
+                    class="w-full h-[40px] bg-[#1a0b12] border-2 border-[#d4af37] text-white font-cinzel font-black tracking-[3px] uppercase rounded-md shadow-lg hover:bg-[#d4af37] hover:text-black transition-colors cursor-pointer text-sm">
+                    Login
+                </button>
+                
+                <button onclick="clicarJogarAgora()" 
+                    class="w-full h-[40px] bg-[#2d5a27] border-2 border-[#d4af37] text-white font-cinzel font-black tracking-[3px] uppercase rounded-md shadow-lg hover:bg-[#722f1b] hover:text-[#d4af37] transition-all cursor-pointer text-sm">
+                    Jogar Agora
+                </button>
+                
+            </div>
         </div>
     </div>
-
-</div>
 
 
     <!-- TELA DE INTRODUÇÃO -->
