@@ -1856,6 +1856,47 @@ function confirmGuardian() {
             `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
     }
 
+                // --- SISTEMA DE TELA CHEIA (FULLSCREEN) ---
+        function toggleFullscreen() {
+            let elem = document.documentElement;
+
+            // Se NÃO estiver em tela cheia, entra
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log(err));
+                } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+                    elem.webkitRequestFullscreen();
+                }
+            } 
+            // Se JÁ ESTIVER em tela cheia, sai
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari / iOS */
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // Fica de olho para trocar o ícone se o status da tela mudar
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+        function updateFullscreenIcon() {
+            const iconExpand = document.getElementById('icon-expand');
+            const iconCompress = document.getElementById('icon-compress');
+            
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                // Está em tela cheia: mostra o ícone de comprimir
+                iconExpand.classList.add('hidden');
+                iconCompress.classList.remove('hidden');
+            } else {
+                // Tela normal: mostra o ícone de expandir
+                iconCompress.classList.add('hidden');
+                iconExpand.classList.remove('hidden');
+            }
+        }
+
     // Novo Olhinho para o Confirmar Senha
     function toggleConfirmPasswordVisibility() {
         const passInput = document.getElementById('reg-confirm-password');
