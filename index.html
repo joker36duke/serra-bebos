@@ -298,13 +298,20 @@
 }
 
 .phone-screen {
-    width: 100%;
-    height: 100%; /* No seu Moto G35, ele vai usar 100% da altura disponível */
     position: relative;
     overflow: hidden;
     background-color: #000;
     display: flex;
     flex-direction: column;
+    
+    /* ESTA É A NOVA MÁGICA: Proporção fixa 9:16 */
+    aspect-ratio: 9 / 16;
+    
+    /* Ele cresce na altura, mas a largura obedece à proporção acima */
+    height: 100%;
+    max-height: 100vh;
+    width: auto;
+    margin: 0 auto;
 }
 
 /* Esta parte abaixo só "desperta" quando o jogo abre num PC (monitor largo) */
