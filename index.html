@@ -2237,6 +2237,39 @@ function confirmGuardian() {
             document.getElementById('custom-alert-modal').classList.add('hidden');
         };
     </script>
-    
+
+    <script>
+    // --- SISTEMA DE ESCALA DE JOGO PROFISSIONAL (A LENTE DE AUMENTO) ---
+    function ajustarTelaDoJogo() {
+        const telaJogo = document.querySelector('.phone-screen');
+        if (!telaJogo) return;
+
+        // As medidas do seu Moto G35
+        const LARGURA_BASE = 412;
+        const ALTURA_BASE = 915;
+
+        let larguraJanela = window.innerWidth;
+        let alturaJanela = window.innerHeight;
+
+        // Se for PC (tela grande), dá um "respiro" para a capinha não bater nas bordas do monitor
+        if (larguraJanela >= 1024) {
+            alturaJanela -= 60; 
+        }
+
+        // Calcula o Zoom perfeito
+        const escalaX = larguraJanela / LARGURA_BASE;
+        const escalaY = alturaJanela / ALTURA_BASE;
+        const escala = Math.min(escalaX, escalaY); 
+
+        // Aplica o Zoom
+        telaJogo.style.transform = `scale(${escala})`;
+        telaJogo.style.transformOrigin = 'center center';
+    }
+
+    // Fica de olho se a tela mudar de tamanho
+    window.addEventListener('resize', ajustarTelaDoJogo);
+    window.addEventListener('DOMContentLoaded', ajustarTelaDoJogo);
+</script>
+
 </body> 
 </html>
