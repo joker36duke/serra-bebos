@@ -558,15 +558,16 @@
     </div>
 </div>
 
-    
-    <!-- TELA 2: SORTEIO -->
-        <div id="screen-luck" class="screen hidden transparent relative overflow-hidden h-full w-full bg-black">
+        <!-- TELA 2: SORTEIO -->
+    <div id="screen-luck" class="screen hidden transparent relative overflow-hidden h-full w-full bg-black">
         
         <div class="absolute inset-0 w-full h-full bg-cover bg-center z-0" style="background-image: url('fundosorteio.png');"></div>
         
-        <div class="absolute bottom-[5%] md:bottom-[10%] w-full flex flex-col items-center z-10 px-4">
+        <!-- Posição ajustada: baixamos de bottom-[8%] para bottom-[3%] -->
+        <div class="absolute bottom-[3%] w-full flex flex-col items-center z-10 px-4">
             
-            <p class="font-cinzel text-luxury-gold text-[9px] uppercase tracking-[4px] mb-4 bg-black/60 px-4 py-1.5 rounded-full border border-luxury-gold/30 backdrop-blur-sm shadow-lg animate-pulse">
+            <!-- Texto maior, mais grosso e com fundo mais forte para contraste -->
+            <p class="font-cinzel text-luxury-gold font-black text-[12px] uppercase tracking-[4px] mb-6 bg-black/80 px-6 py-2 rounded-full border border-luxury-gold/60 backdrop-blur-md shadow-[0_4px_15px_rgba(0,0,0,0.8)] animate-pulse text-center w-[90%] max-w-sm">
                 Escolha uma carta para o sorteio
             </p>
             
