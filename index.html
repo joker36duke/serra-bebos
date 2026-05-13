@@ -70,8 +70,21 @@
         }
         .btn-main:hover { background: var(--wine); transform: translateY(-2px); box-shadow: 0 15px 40px rgba(114, 47, 27, 0.3); border-color: white; }
                 
+    
         .luck-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 15px 0; z-index: 100; }
         .luck-card { width: 82px; height: 115px; perspective: 1000px; cursor: pointer; transition: transform 0.3s ease; position: relative; }
+        .luck-card-front .card-mesa {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+
+        /* Aumentando as letras e símbolos para acompanhar o novo tamanho */
+        .luck-card-front .card-mesa .text-lg { font-size: 1.4rem !important; }
+        .luck-card-front .card-mesa .text-sm { font-size: 1.1rem !important; }
+        .luck-card-front .card-mesa .text-4xl { font-size: 3.2rem !important; }
 
         .luck-card:hover { transform: translateY(-8px) scale(1.05); }
 
