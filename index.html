@@ -109,8 +109,10 @@
     position: relative; 
     border: 12px solid var(--wood-dark); 
     box-shadow: inset 0 0 100px rgba(0,0,0,0.4); 
-}
-        .card-mesa { width: 68px; height: 98px; border-radius: 4px; background: #fff; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); position: relative; cursor: pointer; transition: transform 0.2s;}
+}        
+        /* Aumentamos a base para compensar o zoom da tela (de 68x98 para 80x114) */
+        .card-mesa { width: 80px; height: 114px; border-radius: 4px; background: #fff; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); position: relative; cursor: pointer; transition: transform 0.2s;}
+
         .card-mesa:hover:not(.card-disabled):not(.card-back-style) { transform: translateY(-10px); z-index: 50; }
         @media (min-width: 768px) { .card-mesa { width: 85px; height: 120px; padding: 7px; } }
         
