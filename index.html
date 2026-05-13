@@ -1088,7 +1088,7 @@
             }
         }
 
-        function handleLuckChoice(el, idx) {
+       function handleLuckChoice(el, idx) {
     if (state.luckBusy) return;
     state.luckBusy = true;
     const luckDeck = createFullDeck(); shuffle(luckDeck);
@@ -1125,7 +1125,6 @@
                 const luckTitle = document.querySelector('#screen-luck p');
                 luckTitle.innerText = "EMPATE! NOVO SORTEIO";
                 luckTitle.classList.replace('text-luxury-gold', 'text-amazon');
-                
                 setTimeout(() => {
                     luckTitle.innerText = "Escolha uma carta para o sorteio";
                     luckTitle.classList.replace('text-amazon', 'text-luxury-gold');
@@ -1144,19 +1143,20 @@
             const statusText = document.getElementById('final-status-text');
             
             statusText.innerText = pWins ? `${nomeJogador} DOMINA` : "PIRARUCOG DOMINA";
-            statusText.className = `text-3xl text-center font-black font-cinzel mb-6 tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)] uppercase ${pWins ? 'text-[#22c55e]' : 'text-[#ef4444]'}`;
+            statusText.className = `text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase ${pWins ? 'text-[#22c55e]' : 'text-[#ef4444]'}`;
             
             document.getElementById('label-dono').innerText = pWins ? nomeJogador : "PIRARUCOG";
             document.getElementById('label-serra').innerText = pWins ? "PIRARUCOG" : nomeJogador;
             
             const bgResultado = document.getElementById('bg-resultado-sorteio');
-            
-            if (pWins) {
-                const guardiaoAtual = amazoniaGuardians.find(g => g.name === player_name);
-                const imagemVitoria = guardiaoAtual ? guardiaoAtual.vitoriaImg : 'vitoria_testurion.png';
-                bgResultado.style.backgroundImage = `url('${imagemVitoria}')`;
-            } else {
-                bgResultado.style.backgroundImage = `url('vitoria_pirarucog.png')`;
+            if (bgResultado) {
+                if (pWins) {
+                    const guardiaoAtual = amazoniaGuardians.find(g => g.name === player_name);
+                    const imagemVitoria = (guardiaoAtual && guardiaoAtual.vitoriaImg) ? guardiaoAtual.vitoriaImg : 'vitoria_testurion.png';
+                    bgResultado.style.backgroundImage = `url('${imagemVitoria}')`;
+                } else {
+                    bgResultado.style.backgroundImage = "url('vitoria_pirarucog.png')";
+                }
             }
             
             setTimeout(() => navTo('screen-luck', 'screen-result'), 1500);
