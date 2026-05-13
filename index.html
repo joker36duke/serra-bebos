@@ -1086,88 +1086,80 @@
         }
 
         function handleLuckChoice(el, idx) {
-            if (state.luckBusy) return;
-            state.luckBusy = true;
-            const luckDeck = createFullDeck(); shuffle(luckDeck);
-            
-            const cardP = luckDeck.pop(); 
-            const cardE = luckDeck.pop();
-            
-            const inner = el.querySelector('.luck-card-inner');
-            const front = el.querySelector('.luck-card-front');
-            front.innerHTML = ''; front.appendChild(createCardUI(cardP));
-            inner.classList.add('flipped');
-            
-            const all = document.querySelectorAll('.luck-card'); 
-            const eIdx = (idx + 4) % 8; // Escolha oposta para o inimigo
+    if (state.luckBusy) return;
+    state.luckBusy = true;
+    const luckDeck = createFullDeck(); shuffle(luckDeck);
+    
+    const cardP = luckDeck.pop(); 
+    const cardE = luckDeck.pop();
+    
+    const inner = el.querySelector('.luck-card-inner');
+    const front = el.querySelector('.luck-card-front');
+    front.innerHTML = ''; front.appendChild(createCardUI(cardP));
+    inner.classList.add('flipped');
+    
+    const all = document.querySelectorAll('.luck-card'); 
+    const eIdx = (idx + 4) % 8; 
 
-            setTimeout(() => {
-                const eInner = all[eIdx].querySelector('.luck-card-inner');
-                const eFront = all[eIdx].querySelector('.luck-card-front');
-                eFront.innerHTML = ''; eFront.appendChild(createCardUI(cardE));
-                eInner.classList.add('flipped');
+    setTimeout(() => {
+        const eInner = all[eIdx].querySelector('.luck-card-inner');
+        const eFront = all[eIdx].querySelector('.luck-card-front');
+        eFront.innerHTML = ''; eFront.appendChild(createCardUI(cardE));
+        eInner.classList.add('flipped');
+
+        setTimeout(() => {
+            function getSorteioPower(c) {
+                if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
+                if (c.rank === '3' && c.suit === 'Paus') return 99;
+                if (c.rank === 'A' && c.suit === 'Paus') return 98;
+                return c.power;
+            }
+
+            let pPower = getSorteioPower(cardP);
+            let ePower = getSorteioPower(cardE);
+
+            if (pPower === ePower) {
+                const luckTitle = document.querySelector('#screen-luck p');
+                luckTitle.innerText = "EMPATE! NOVO SORTEIO";
+                luckTitle.classList.replace('text-luxury-gold', 'text-amazon');
                 
                 setTimeout(() => {
-    // Avaliação de força considerando a hierarquia correta dos Bebos
-                    function getSorteioPower(c) {
-                    if (c.rank === 'Q' && c.suit === 'Espadas') return 100; // Dama Fina (Maior de todos)
-                    if (c.rank === '3' && c.suit === 'Paus') return 99;     // Coringa (Segundo maior)
-                    if (c.rank === 'A' && c.suit === 'Paus') return 98;     // Pé de Pinto (Terceiro maior)
-    return c.power;
-
-                    }
-
-                    let pPower = getSorteioPower(cardP);
-                    let ePower = getSorteioPower(cardE);
-
-                                    // Nova Regra: Se der empate
-                    if (pPower === ePower) {
-                        // 1. Procura o texto certo (que é um <p> e não um <h2>)
-                        const luckTitle = document.querySelector('#screen-luck p');
-                        const originalText = luckTitle.innerText;
-                        
-                        // 2. Muda o texto para avisar do empate
-                        luckTitle.innerText = "EMPATE! NOVO SORTEIO";
-                        luckTitle.classList.remove('text-luxury-gold');
-                        luckTitle.classList.add('text-amazon'); // Fica verde
-                        
-                        setTimeout(() => {
-                            // 3. Devolve o texto ao normal
-                            luckTitle.innerText = originalText;
-                            luckTitle.classList.remove('text-amazon');
-                            luckTitle.classList.add('text-luxury-gold');
-                            
-                            // 4. DESTRAVA A MESA PARA NOVO CLIQUE
-                            state.luckBusy = false;
-                            
-                            // 5. Refaz as cartas viradas para baixo
-                            renderLuckGrid(); 
-                        }, 2000);
-                        
-                        return; // Interrompe para forçar a nova tirada
-                    }
-                    
-                    let pWins = pPower > ePower;
-                    
-                    state.isDono = pWins;
-                    state.pSerraScore = 1;
-                    state.eSerraScore = 1;
-                    
-                    // === MÁGICA DOS NOMES DINÂMICOS ===
-                    // Pega o nome do bicho escolhido e deixa tudo em MAIÚSCULO
-                    const nomeJogador = player_name.toUpperCase(); 
-                    
-                    document.getElementById('final-status-text').innerText = pWins ? nomeJogador + " DOMINA" : "PIRARUCOG DOMINA";
-                    document.getElementById('final-status-text').className = `text-4xl font-black font-cinzel mb-12 tracking-tighter ${pWins ? 'text-amazon' : 'text-wine'}`;
-                    
-                    document.getElementById('label-dono').innerText = pWins ? nomeJogador : "PIRARUCOG";
-                    document.getElementById('label-serra').innerText = pWins ? "PIRARUCOG" : nomeJogador;
-                    // ===================================
-                    
-                    setTimeout(() => navTo('screen-luck', 'screen-result'), 1500);
-                }, 1200);
-            }, 800);
-        }
+                    luckTitle.innerText = "Escolha uma carta para o sorteio";
+                    luckTitle.classList.replace('text-amazon', 'text-luxury-gold');
+                    state.luckBusy = false;
+                    renderLuckGrid(); 
+                }, 2000);
+                return;
+            }
+            
+            let pWins = pPower > ePower;
+            state.isDono = pWins;
+            state.pSerraScore = 1;
+            state.eSerraScore = 1;
+            
+            const nomeJogador = player_name.toUpperCase(); 
+            const statusText = document.getElementById('final-status-text');
+            
+            statusText.innerText = pWins ? `${nomeJogador} DOMINA` : "PIRARUCOG DOMINA";
+            statusText.className = `text-3xl text-center font-black font-cinzel mb-6 tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)] uppercase ${pWins ? 'text-[#22c55e]' : 'text-[#ef4444]'}`;
+            
+            document.getElementById('label-dono').innerText = pWins ? nomeJogador : "PIRARUCOG";
+            document.getElementById('label-serra').innerText = pWins ? "PIRARUCOG" : nomeJogador;
+            
+            const bgResultado = document.getElementById('bg-resultado-sorteio');
+            
+            if (pWins) {
+                const guardiaoAtual = amazoniaGuardians.find(g => g.name === player_name);
+                const imagemVitoria = guardiaoAtual ? guardiaoAtual.vitoriaImg : 'vitoria_testurion.png';
+                bgResultado.style.backgroundImage = `url('${imagemVitoria}')`;
+            } else {
+                bgResultado.style.backgroundImage = `url('vitoria_pirarucog.png')`;
+            }
+            
+            setTimeout(() => navTo('screen-luck', 'screen-result'), 1500);
+        }, 1200);
+    }, 800);
+}
 
         // --- INICIALIZAÇÃO DA MESA ---
         function startSeringalGame() {
