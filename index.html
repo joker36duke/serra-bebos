@@ -1143,13 +1143,18 @@
             state.eSerraScore = 1;
             
             const nomeJogador = player_name.toUpperCase(); 
+            // Usa o nome do inimigo armazenado no estado (Bot ou Jogador Online)
+            const nomeInimigo = state.enemyName.toUpperCase(); 
+            
             const statusText = document.getElementById('final-status-text');
             
-            statusText.innerText = pWins ? `${nomeJogador} DOMINA` : "PIRARUCOG DOMINA";
+            // Troca o texto estático pela variável
+            statusText.innerText = pWins ? `${nomeJogador} DOMINA` : `${nomeInimigo} DOMINA`;
             statusText.className = `text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase ${pWins ? 'text-[#22c55e]' : 'text-[#ef4444]'}`;
             
-            document.getElementById('label-dono').innerText = pWins ? nomeJogador : "PIRARUCOG";
-            document.getElementById('label-serra').innerText = pWins ? "PIRARUCOG" : nomeJogador;
+            // Preenche o painel de quem ficou na mesa e quem foi para o serra
+            document.getElementById('label-dono').innerText = pWins ? nomeJogador : nomeInimigo;
+            document.getElementById('label-serra').innerText = pWins ? nomeInimigo : nomeJogador;
             
             const bgResultado = document.getElementById('bg-resultado-sorteio');
             if (bgResultado) {
@@ -1158,7 +1163,8 @@
                     const imagemVitoria = (guardiaoAtual && guardiaoAtual.vitoriaImg) ? guardiaoAtual.vitoriaImg : 'vitoria_testurion.png';
                     bgResultado.style.backgroundImage = `url('${imagemVitoria}')`;
                 } else {
-                    bgResultado.style.backgroundImage = "url('vitoria_pirarucog.png')";
+                    // Carrega a imagem do Pirarucog se for offline, ou uma imagem genérica de oponente se for online
+                    bgResultado.style.backgroundImage = state.isOnline ? "url('fundo_adversario.png')" : "url('vitoria_pirarucog.png')";
                 }
             }
             
