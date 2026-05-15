@@ -2213,7 +2213,60 @@ window.buscarPartida1x1 = async function() {
     // Ativa o monitoramento em tempo real da sala
     ouvirEventosSala(state.salaId);
 };
-                
+              // GERA AS 8 CARTAS EMBORCADAS NO BANCO DE DADOS
+window.gerar8CartasSorteio = function() {
+    let d = [];
+    suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
+    for (let i = d.length - 1; i > 0; i--) { // Shuffle local
+        const j = Math.floor(Math.random() * (i + 1));
+        [d[i], d[j]] = [d[j], d[i]];
+    }
+    
+    let cartas = {};
+    for(let i = 0; i < 8; i++) {
+        let c = d.pop();
+        cartas[i] = { rank: c.rank, suit: c.suit, power: c.power, pts: c.pts, escolhidaPor: null, virada: false };
+    }
+    return cartas;
+};
+
+// FICA OLHANDO A SALA EM TEMPO REAL
+window.ouvirEventosSala = function(idSala) {
+    onValue(ref(database, `salas/${idSala}/mesa_sorteio`), (snapshot) => {
+        if(!snapshot.exists()) return;
+        const cartas = snapshot.val();
+        
+        // Desenha a mesa na tela
+        renderizarMesaSorteioOnline(cartas);
+        
+        // Verifica quantas já foram viradas
+        const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+        
+        // Se 2 jogadores já escolheram (modo 1v1), finaliza o sorteio!
+        if (escolhidas.length === 2) {
+            setTimeout(() => {
+                finalizarSorteioMultiplayer(cartas);
+            }, 1500); // Dá 1.5s para os jogadores verem as cartas viradas antes de mudar de tela
+        }
+    });
+};
+
+// FUNÇÃO PARA CLICAR NA CARTA E AVISAR O FIREBASE (TRANSAÇÃO)
+window.escolherCartaSorteio = function(indice) {
+    if (!state.isOnline || !state.salaId) return;
+    
+    const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
+    
+    // runTransaction garante que dois jogadores não peguem a mesma carta ao mesmo tempo
+    runTransaction(cartaRef, (carta) => {
+        if (carta && carta.escolhidaPor === null) {
+            carta.escolhidaPor = auth.currentUser.uid;
+            carta.virada = true;
+            return carta;
+        }
+        return; // Aborta se a carta já tiver dono
+    });
+};
     
         </script>
 
