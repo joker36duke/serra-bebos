@@ -2009,7 +2009,6 @@ function confirmGuardian() {
 </script>
 
             <script type="module">
-        // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, get, push, remove, update, runTransaction, onDisconnect } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -2111,79 +2110,82 @@ function confirmGuardian() {
         // =========================================================
 
         // 1. MATCHMAKING INTELIGENTE (COM PROTEÇÃO ANTI-FANTASMA)
-window.buscarPartida = async function(tipoJogo) {
-    const user = auth.currentUser;
-    if (!user) {
-        mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login.");
-        return;
-    }
-
-    const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
-    const maxJogadores = limites[tipoJogo];
-    let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
-
-    mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
-
-    const salasRef = ref(database, 'salas');
-    const snapshot = await get(salasRef);
-    let salaEncontrada = null;
-
-    if (snapshot.exists()) {
-        const salas = snapshot.val();
-        for (let id in salas) {
-            const s = salas[id];
-            // TRAVA DE SEGURANÇA: Só entra se a sala estiver AGUARDANDO e com vaga real
-            if (s.config && s.config.tipo === tipoJogo && s.config.status === 'aguardando' && Object.keys(s.jogadores).length < maxJogadores && !s.jogadores[user.uid]) {
-                salaEncontrada = id;
-                break;
+        window.buscarPartida = async function(tipoJogo) {
+            const user = auth.currentUser;
+            if (!user) {
+                mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login.");
+                return;
             }
-        }
-    }
 
-    if (salaEncontrada) {
-        // ENTRA NA SALA EXISTENTE (Sua Mãe entrando na sua sala)
-        const salaRef = ref(database, `salas/${salaEncontrada}`);
-        const snapSala = await get(salaRef);
-        const salaAtual = snapSala.val();
-        const qtdAtual = Object.keys(salaAtual.jogadores).length;
-        const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
+            const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
+            const maxJogadores = limites[tipoJogo];
+            let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
 
-        await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
-            nome: nomeJogador, equipa: equipe
-        });
+            mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
 
-        // Se a sala encheu com a entrada, muda o status para liberar as duas telas!
-        if (qtdAtual + 1 === maxJogadores) {
-            await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
-        }
-        
-        state.salaId = salaEncontrada;
-        state.isOnline = true;
-        
-        // Se ela fechar o app, ela sai da cadeira
-        onDisconnect(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`)).remove();
+            const salasRef = ref(database, 'salas');
+            const snapshot = await get(salasRef);
+            let salaEncontrada = null;
 
-    } else {
-        // CRIA SALA NOVA E SENTA PRA ESPERAR (Você criando a sala)
-        const novaSalaRef = push(ref(database, 'salas'));
-        const cartasSorteio = gerar8CartasSorteio();
-        
-        await set(novaSalaRef, {
-            config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando', criador: user.uid },
-            jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
-            mesa_sorteio: cartasSorteio
-        });
-        
-        // 🚨 A MAGIA ACONTECE AQUI: Se o criador (Você) atualizar a página, o Firebase DETONA a sala inteira!
-        onDisconnect(novaSalaRef).remove();
-        
-        state.salaId = novaSalaRef.key;
-        state.isOnline = true;
-        mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
-    }
+            if (snapshot.exists()) {
+                const salas = snapshot.val();
+                for (let id in salas) {
+                    const s = salas[id];
+                    // TRAVA DE SEGURANÇA: Só entra se a sala estiver AGUARDANDO e com vaga real
+                    if (s.config && s.config.tipo === tipoJogo && s.config.status === 'aguardando' && Object.keys(s.jogadores).length < maxJogadores && !s.jogadores[user.uid]) {
+                        salaEncontrada = id;
+                        break;
+                    }
+                }
+            }
 
-    ouvirEventosSala(state.salaId);
-};
+            if (salaEncontrada) {
+                // ENTRA NA SALA EXISTENTE
+                const salaRef = ref(database, `salas/${salaEncontrada}`);
+                const snapSala = await get(salaRef);
+                const salaAtual = snapSala.val();
+                const qtdAtual = Object.keys(salaAtual.jogadores).length;
+                const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
+
+                await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
+                    nome: nomeJogador, equipa: equipe
+                });
+
+                // Se a sala encheu com a entrada, muda o status para liberar as duas telas!
+                if (qtdAtual + 1 === maxJogadores) {
+                    await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
+                }
+                
+                state.salaId = salaEncontrada;
+                state.isOnline = true;
+                
+                // Se o jogador fechar o app, ele sai da cadeira
+                onDisconnect(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`)).remove();
+
+            } else {
+                // CRIA SALA NOVA E SENTA PRA ESPERAR
+                const novaSalaRef = push(ref(database, 'salas'));
+                const cartasSorteio = gerar8CartasSorteio();
+                
+                await set(novaSalaRef, {
+                    config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando', criador: user.uid },
+                    jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
+                    mesa_sorteio: cartasSorteio
+                });
+                
+                // 🚨 A MAGIA ACONTECE AQUI: Se o criador atualizar a página, o Firebase DETONA a sala inteira!
+                onDisconnect(novaSalaRef).remove();
+                
+                state.salaId = novaSalaRef.key;
+                state.isOnline = true;
+                mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
+            }
+
+            ouvirEventosSala(state.salaId);
+        };
+
+        // 👉 ATALHO RELIGADO AQUI!
+        window.buscarPartida1x1 = () => window.buscarPartida('1v1');
 
         // 2. GERA AS 8 CARTAS DO SORTEIO NO BANCO DE DADOS
         window.gerar8CartasSorteio = function() {
