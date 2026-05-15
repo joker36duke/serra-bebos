@@ -2146,7 +2146,7 @@ function confirmGuardian() {
             }); 
         }
 
-        // 3. MOTOR DE MATCHMAKING (DUELO 1x1)
+                // 3. MOTOR DE MATCHMAKING ATUALIZADO (DUELO 1x1 ONLINE)
         window.buscarPartida1x1 = function() {
             const user = auth.currentUser;
             if (!user) {
@@ -2155,46 +2155,59 @@ function confirmGuardian() {
             }
 
             let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO DESCONHECIDO";
-            mostrarAlertaSeringal("Entrando na Mata...", "Aguarde, " + nomeJogador + "...\n\nO Seringal está buscando um oponente à sua altura...");
+            
+            // Feedback inicial
+            mostrarAlertaSeringal("Buscando...", "O Seringal está procurando um oponente à sua altura...");
 
             const filaRef = ref(database, 'filaEspera1v1');
 
-            // Olha para ver se tem alguém na fila
             get(filaRef).then((snapshot) => {
                 if (snapshot.exists()) {
-                    // TEM ALGUÉM LÁ! Vamos conectar com ele
+                    // JOGADOR 2 ENCONTROU ALGUÉM
                     const oponente = snapshot.val();
                     
-                    // Impede de você jogar contra você mesmo (caso clique duas vezes)
                     if (oponente.uid === user.uid) {
                         mostrarAlertaSeringal("Já na Fila", "Você já está aguardando um oponente na mesa!");
                         return;
                     }
 
-                    mostrarAlertaSeringal("Adversário Encontrado!", "A mata tremeu!\nVocê vai enfrentar: " + oponente.nome + "\n\n(A lógica de distribuir as cartas será nosso próximo passo!)");
+                    // Configura o estado para o modo Online
+                    state.isOnline = true;
+                    state.enemyName = oponente.nome; // Define o nome do inimigo como o de quem estava na fila
                     
-                    // Limpa a fila para não entrar uma 3ª pessoa
+                    // Limpa a fila e fecha o alerta
                     remove(filaRef);
+                    fecharAlertaSeringal();
+
+                    // TRANSIÇÃO PARA O SORTEIO (Igual ao modo contra o bot)
+                    navTo('screen-lobby', 'screen-luck', renderLuckGrid);
 
                 } else {
-                    // NÃO TEM NINGUÉM! Você é o primeiro. Senta e espera.
+                    // JOGADOR 1 ENTRA NA FILA
                     set(filaRef, {
                         uid: user.uid,
                         nome: nomeJogador
                     });
                     
-                    mostrarAlertaSeringal("Dono da Mesa", "Ainda não há adversários...\n\nVocê sentou na mesa. Aguardando um desafiante se conectar ao Seringal...");
+                    mostrarAlertaSeringal("Dono da Mesa", "Aguardando um desafiante se conectar ao Seringal...");
 
-                    // O Seringal avisa você quando alguém limpar a fila (ou seja, quando alguém entrar)
-                    onValue(filaRef, (snap) => {
+                    // Ouve quando um oponente entra (o oponente remove a fila)
+                    const unsubscribe = onValue(filaRef, (snap) => {
                         if (!snap.exists()) {
-                            mostrarAlertaSeringal("Desafiante Chegou!", "Um oponente sentou à sua mesa!\n\n(A lógica de distribuir as cartas será nosso próximo passo!)");
+                            // JOGADOR 1 TAMBÉM VAI PARA O SORTEIO
+                            state.isOnline = true;
+                            state.enemyName = "DESAFIANTE"; // Nome temporário até a criação das salas
+                            
+                            fecharAlertaSeringal();
+                            navTo('screen-lobby', 'screen-luck', renderLuckGrid);
+                            
+                            unsubscribe(); // Para de ouvir a fila
                         }
                     });
                 }
             }).catch((error) => {
                 console.error(error);
-                mostrarAlertaSeringal("Aviso da Floresta", "As nuvens cobriram o Seringal. Erro de conexão.");
+                mostrarAlertaSeringal("Aviso da Floresta", "Erro de conexão. As nuvens cobriram o Seringal.");
             });
         };
     
