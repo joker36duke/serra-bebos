@@ -2010,9 +2010,10 @@ function confirmGuardian() {
 
             <script type="module">
         // ⚠️ IMPORTANTE: Os links precisam ter o "https://..." para funcionar no navegador!
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, get, push, remove, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        
         // Suas credenciais exclusivas do projeto
         const firebaseConfig = {
             apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
@@ -2021,7 +2022,6 @@ function confirmGuardian() {
             databaseURL: "https://serra-bebos-default-rtdb.firebaseio.com" 
         };
 
-        // Inicializa o motor
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app); 
@@ -2029,7 +2029,7 @@ function confirmGuardian() {
         console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
         // ==========================================
-        // RECUPERAÇÃO DE SENHA
+        // RECUPERAÇÃO DE SENHA E CADASTRO
         // ==========================================
         window.recuperarSenha = function() {
             const emailInput = document.getElementById('login-email').value.trim();
@@ -2037,362 +2037,316 @@ function confirmGuardian() {
                 mostrarAlertaSeringal("O Bebo-Mor Aguarda", "Para convocar o Bebo-Mor do Seringal, digite o seu e-mail no campo acima e clique em 'Esqueceu a senha?' novamente.");
                 return;
             }
-            
             mostrarAlertaSeringal("A Caminho...", "Invocando o Bebo-Mor do Seringal para buscar seus dados...");
-            
-            sendPasswordResetEmail(auth, emailInput)
-                .then(() => {
-                    mostrarAlertaSeringal("O Bebo-Mor Partiu!", "O Bebo-Mor do Seringal iniciou a jornada pela mata!\n\nSe o e-mail '" + emailInput + "' for de uma lenda verdadeira, ele entregará o pergaminho de recuperação.\n\nCheque sua caixa de entrada e os cantos escuros do Spam.");
-                })
-                .catch((error) => {
-                    mostrarAlertaSeringal("Aviso da Floresta", "O Bebo-Mor se perdeu na mata. Tente novamente mais tarde.");
-                });
+            sendPasswordResetEmail(auth, emailInput).then(() => {
+                mostrarAlertaSeringal("O Bebo-Mor Partiu!", "O Bebo-Mor do Seringal iniciou a jornada pela mata!\n\nCheque sua caixa de entrada.");
+            }).catch(() => {
+                mostrarAlertaSeringal("Aviso da Floresta", "O Bebo-Mor se perdeu na mata. Tente novamente.");
+            });
         };
             
-        // 1. MOTOR DE CADASTRO (REGISTRO OFICIAL)
         const formRegister = document.getElementById('form-register');
         if(formRegister) {
             formRegister.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
                 const email = document.getElementById('reg-email').value.trim();
                 const password = document.getElementById('reg-password').value;
                 const confirmPassword = document.getElementById('reg-confirm-password').value; 
                 const nomeGuerra = document.getElementById('reg-username').value.trim() + " " + document.getElementById('reg-guardian-name').innerText;
                 
                 if (password !== confirmPassword) {
-                    mostrarAlertaSeringal("O Bebo-Mor Recusou", "O Bebo-Mor do Seringal notou um erro: as senhas não coincidem!\nPor favor, digite a mesma senha nos dois campos.");
+                    mostrarAlertaSeringal("O Bebo-Mor Recusou", "As senhas não coincidem!");
                     return; 
                 }
                 
                 const dobInput = document.getElementById('reg-dob').value;
-                if (dobInput.length < 10) {
-                    mostrarAlertaSeringal("Faltam Dados", "O Bebo-Mor precisa saber a data correta do seu nascimento (Ex: 01/01/1990).");
-                    return;
-                }
-                const partes = dobInput.split('/');
-                const dob = new Date(partes[2], partes[1] - 1, partes[0]);
-                const today = new Date();
-                let age = today.getFullYear() - dob.getFullYear();
-                if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) { age--; }
+                if (dobInput.length < 10) return;
                 
-                if (age < 18) {
-                    mostrarAlertaSeringal("O Bebo-Mor Barrou Você", "O Seringal é implacável. Pelas leis da floresta, o cadastro é permitido apenas para maiores de 18 anos.");
-                    return; 
-                }
-
                 mostrarAlertaSeringal("Registrando...", "O Bebo-Mor do Seringal está levando seus selos aos anciões...");
 
                 createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    // SALVA O NOME E O AVATAR NO FIREBASE
-                    updateProfile(userCredential.user, {
-                        displayName: nomeGuerra
-                    }).then(() => {
+                    updateProfile(userCredential.user, { displayName: nomeGuerra }).then(() => {
                         sendEmailVerification(userCredential.user).then(() => {
-                            mostrarAlertaSeringal("Lenda Registrada!", "O Bebo-Mor do Seringal aprova a sua chegada, " + nomeGuerra + "!\n\n⚠️ ATENÇÃO: O Bebo-Mor acabou de deixar um pergaminho de confirmação na sua caixa de entrada (" + email + ").\n\nAbra, assine e volte para jogar!");
+                            mostrarAlertaSeringal("Lenda Registrada!", "Bem-vindo, " + nomeGuerra + "!\n\nConfirme seu e-mail na caixa de entrada para jogar!");
                             formRegister.reset();
-                            
                             document.getElementById('screen-registration').classList.add('hidden');
                             document.getElementById('screen-login').classList.remove('hidden');
                         });
                     });
-                })
-                .catch((error) => {
-                    if(error.code === 'auth/email-already-in-use') {
-                        mostrarAlertaSeringal("Já Conhecemos Você", "O Bebo-Mor do Seringal avisa: Este e-mail já pertence a uma lenda da mesa! Tente fazer Login.");
-                    } else if (error.code === 'auth/weak-password') {
-                        mostrarAlertaSeringal("Defesa Fraca", "O Bebo-Mor alerta: Sua senha é muito fraca para proteger seus segredos na floresta. Use pelo menos 6 caracteres.");
-                    } else {
-                        mostrarAlertaSeringal("Erro na Floresta", error.message);
-                    }
-                });
+                }).catch((error) => mostrarAlertaSeringal("Erro na Floresta", error.message));
             });
         }
 
-        // 2. MOTOR DE LOGIN OFICIAL (GRANDE SERRA)
         const formLogin = document.getElementById('form-login');
         if(formLogin) {
             formLogin.addEventListener('submit', function(e) {
                 e.preventDefault(); 
-                
                 const email = document.getElementById('login-email').value.trim();
                 const password = document.getElementById('login-password').value;
 
-                mostrarAlertaSeringal("Analisando...", "O Bebo-Mor está conferindo seus selos de acesso na entrada do Seringal...");
+                mostrarAlertaSeringal("Analisando...", "Conferindo seus selos de acesso...");
 
                 signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    
                     if(user.emailVerified) {
-                        // 1. Fecha o login
                         document.getElementById('screen-login').classList.add('hidden');
-                        
-                        // 2. PUXA O NOME SALVO NO CADASTRO (Nome + Avatar)
                         let nomeJogador = user.displayName ? user.displayName.toUpperCase() : user.email.split('@')[0].toUpperCase();
                         document.getElementById('lobby-player-name').innerText = nomeJogador;
-                        
-                        // 3. Vai para o Lobby
                         navTo('screen-start', 'screen-lobby');
-                        
-                        mostrarAlertaSeringal("Portões Abertos!", "O Bebo-Mor reconhece a sua marca.\n\nBem-vindo ao Grande Serra, " + nomeJogador + "!");
+                        mostrarAlertaSeringal("Portões Abertos!", "Bem-vindo ao Grande Serra, " + nomeJogador + "!");
                     } else {
-                        // Caso o e-mail não tenha sido verificado
                         sendEmailVerification(user).then(() => {
-                            mostrarAlertaSeringal("Pergaminho Faltando!", "O Bebo-Mor barrou a passagem: O seu pergaminho não foi assinado!\n\nVerifique seu e-mail para confirmar sua identidade.");
+                            mostrarAlertaSeringal("Pergaminho Faltando!", "Seu pergaminho não foi assinado! Verifique seu e-mail.");
                             auth.signOut();
                         });
                     }
-                })
-                .catch((error) => {
-                    // Trata erro de senha ou e-mail incorretos
-                    mostrarAlertaSeringal("Acesso Negado", "O Bebo-Mor do Seringal cruzou os braços:\n\nSuas credenciais não batem. E-mail ou senha incorretos.");
-                });
+                }).catch(() => mostrarAlertaSeringal("Acesso Negado", "E-mail ou senha incorretos."));
             }); 
         }
                 
-// =========================================================
-// MOTOR UNIVERSAL SERRA BEBOS: 1x1, 2x2 e 3x3 (COMPLETO)
-// =========================================================
+        // =========================================================
+        // MOTOR UNIVERSAL SERRA BEBOS: 1x1, 2x2 e 3x3 (O DEFINITIVO)
+        // =========================================================
 
-// Botão antigo puxa a função nova no modo 1x1
-window.buscarPartida1x1 = () => buscarPartida('1v1');
+        window.buscarPartida1x1 = () => buscarPartida('1v1');
 
-// 1. MATCHMAKING INTELIGENTE (ESPERA A SALA ENCHER)
-window.buscarPartida = async function(tipoJogo) {
-    const user = auth.currentUser;
-    if (!user) {
-        mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login novamente.");
-        return;
-    }
-
-    const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
-    const maxJogadores = limites[tipoJogo];
-    let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
-
-    mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
-
-    const salasRef = ref(database, 'salas');
-    const snapshot = await get(salasRef);
-    let salaEncontrada = null;
-
-    if (snapshot.exists()) {
-        const salas = snapshot.val();
-        for (let id in salas) {
-            const s = salas[id];
-            if (s.config.tipo === tipoJogo && Object.keys(s.jogadores).length < maxJogadores) {
-                salaEncontrada = id;
-                break;
+        // 1. MATCHMAKING INTELIGENTE (COM TRAVA ANTI-SALA FANTASMA)
+        window.buscarPartida = async function(tipoJogo) {
+            const user = auth.currentUser;
+            if (!user) {
+                mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login.");
+                return;
             }
-        }
-    }
 
-    if (salaEncontrada) {
-        // ENTRA NA SALA: Define a equipe (Alternando A e B)
-        const salaAtual = (await get(ref(database, `salas/${salaEncontrada}`))).val();
-        const qtdAtual = Object.keys(salaAtual.jogadores).length;
-        const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
+            const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
+            const maxJogadores = limites[tipoJogo];
+            let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
 
-        await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
-            nome: nomeJogador, equipa: equipe
-        });
+            mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
 
-        // Se a sala encheu, avisa o Firebase para começar o sorteio!
-        if (qtdAtual + 1 === maxJogadores) {
-            await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
-        }
-        
-        state.salaId = salaEncontrada;
-        state.isOnline = true;
-    } else {
-        // CRIA SALA NOVA E SENTA PRA ESPERAR
-        const novaSalaRef = push(ref(database, 'salas'));
-        const cartasSorteio = gerar8CartasSorteio();
-        
-        await set(novaSalaRef, {
-            config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando' },
-            jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
-            mesa_sorteio: cartasSorteio
-        });
-        
-        state.salaId = novaSalaRef.key;
-        state.isOnline = true;
-        mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
-    }
+            const salasRef = ref(database, 'salas');
+            const snapshot = await get(salasRef);
+            let salaEncontrada = null;
 
-    ouvirEventosSala(state.salaId);
-};
+            if (snapshot.exists()) {
+                const salas = snapshot.val();
+                for (let id in salas) {
+                    const s = salas[id];
+                    // TRAVA FANTASMA: Só entra se tiver vaga E o jogador AINDA NÃO ESTIVER na sala
+                    if (s.config.tipo === tipoJogo && Object.keys(s.jogadores).length < maxJogadores && !s.jogadores[user.uid]) {
+                        salaEncontrada = id;
+                        break;
+                    }
+                }
+            }
 
-// 2. GERA AS 8 CARTAS DO SORTEIO
-window.gerar8CartasSorteio = function() {
-    let d = [];
-    suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
-    for (let i = d.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [d[i], d[j]] = [d[j], d[i]];
-    }
-    let cartas = {};
-    for(let i = 0; i < 8; i++) {
-        let c = d.pop();
-        cartas[i] = { rank: c.rank, suit: c.suit, power: c.power, pts: c.pts, escolhidaPor: null, virada: false };
-    }
-    return cartas;
-};
+            if (salaEncontrada) {
+                // ENTRA NA SALA EXISTENTE
+                const salaAtual = (await get(ref(database, `salas/${salaEncontrada}`))).val();
+                const qtdAtual = Object.keys(salaAtual.jogadores).length;
+                const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
 
-// 3. MONITORAMENTO EM TEMPO REAL
-window.ouvirEventosSala = function(idSala) {
-    onValue(ref(database, `salas/${idSala}`), (snapshot) => {
-        if(!snapshot.exists()) return;
-        
-        const sala = snapshot.val();
-        const status = sala.config.status;
-        const cartas = sala.mesa_sorteio;
-        
-        // ABRE A TELA SÓ QUANDO A SALA ENCHER DE JOGADORES
-        if (status === 'sorteio' && document.getElementById('screen-luck').classList.contains('hidden')) {
-            fecharAlertaSeringal();
-            navTo('screen-lobby', 'screen-luck');
-        }
+                await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
+                    nome: nomeJogador, equipa: equipe
+                });
 
-        if (status === 'sorteio') {
-            renderizarMesaSorteioOnline(cartas);
+                if (qtdAtual + 1 === maxJogadores) {
+                    await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
+                }
+                
+                state.salaId = salaEncontrada;
+                state.isOnline = true;
+            } else {
+                // CRIA SALA NOVA E SENTA PRA ESPERAR
+                const novaSalaRef = push(ref(database, 'salas'));
+                const cartasSorteio = gerar8CartasSorteio();
+                
+                await set(novaSalaRef, {
+                    config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando' },
+                    jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
+                    mesa_sorteio: cartasSorteio
+                });
+                
+                state.salaId = novaSalaRef.key;
+                state.isOnline = true;
+                
+                // ESSE ALERTA FICA NA TELA ENQUANTO ESPERA!
+                mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
+            }
+
+            ouvirEventosSala(state.salaId);
+        };
+
+        // 2. GERA AS 8 CARTAS DO SORTEIO NO BANCO DE DADOS
+        window.gerar8CartasSorteio = function() {
+            let d = [];
+            suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
+            for (let i = d.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [d[i], d[j]] = [d[j], d[i]];
+            }
+            let cartas = {};
+            for(let i = 0; i < 8; i++) {
+                let c = d.pop();
+                cartas[i] = { rank: c.rank, suit: c.suit, power: c.power, pts: c.pts, escolhidaPor: null, virada: false };
+            }
+            return cartas;
+        };
+
+        // 3. MONITORAMENTO DA SALA (Vigia se o adversário entrou)
+        window.ouvirEventosSala = function(idSala) {
+            onValue(ref(database, `salas/${idSala}`), (snapshot) => {
+                if(!snapshot.exists()) return;
+                
+                const sala = snapshot.val();
+                const status = sala.config.status;
+                const cartas = sala.mesa_sorteio;
+                
+                // SE A SALA ENCHER, ABRE O SORTEIO PARA TODOS
+                if (status === 'sorteio' && document.getElementById('screen-luck').classList.contains('hidden')) {
+                    fecharAlertaSeringal();
+                    navTo('screen-lobby', 'screen-luck');
+                }
+
+                if (status === 'sorteio') {
+                    renderizarMesaSorteioOnline(cartas);
+                    
+                    const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+                    if (escolhidas.length === sala.config.maxJogadores) {
+                        setTimeout(() => finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
+                    }
+                }
+            });
+        };
+
+        // 4. VISUAL DAS CARTAS (Desenha o HTML ao vivo)
+        window.renderizarMesaSorteioOnline = function(cartasFirebase) {
+            const grid = document.getElementById('luck-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
             
-            // FIM DO SORTEIO: Espera todos escolherem sua carta
-            const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
-            if (escolhidas.length === sala.config.maxJogadores) {
-                setTimeout(() => finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
+            for (let i = 0; i < 8; i++) {
+                const cartaDb = cartasFirebase[i];
+                const c = document.createElement('div');
+                c.className = 'luck-card';
+                
+                c.innerHTML = `
+                    <div class="luck-card-inner ${cartaDb.virada ? 'flipped' : ''}">
+                        <div class="luck-card-back card-back-style overflow-hidden"></div>
+                        <div class="luck-card-front"></div>
+                    </div>
+                `;
+
+                if (cartaDb.virada) {
+                    const front = c.querySelector('.luck-card-front');
+                    front.innerHTML = '';
+                    front.appendChild(createCardUI(cartaDb));
+                } else {
+                    c.onclick = () => escolherCartaSorteio(i);
+                }
+                grid.appendChild(c);
             }
-        }
-    });
-};
+        };
 
-// 4. VISUAL DAS CARTAS (Com trava de duplo clique na UI)
-window.renderizarMesaSorteioOnline = function(cartasFirebase) {
-    const grid = document.getElementById('luck-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    
-    for (let i = 0; i < 8; i++) {
-        const cartaDb = cartasFirebase[i];
-        const c = document.createElement('div');
-        c.className = 'luck-card';
-        
-        c.innerHTML = `
-            <div class="luck-card-inner ${cartaDb.virada ? 'flipped' : ''}">
-                <div class="luck-card-back card-back-style overflow-hidden"></div>
-                <div class="luck-card-front"></div>
-            </div>
-        `;
+        // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
+        window.escolherCartaSorteio = async function(indice) {
+            if (!state.salaId || state.luckBusy) return;
+            
+            const meuUid = auth.currentUser.uid;
+            const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
+            
+            if (snapshot.exists()) {
+                const cartasAtuais = snapshot.val();
+                const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
+                if (jaEscolhi) {
+                    mostrarAlertaSeringal("Segure a emoção!", "Você já tirou a sua carta da sorte. Aguarde os outros.");
+                    return; 
+                }
+            }
 
-        if (cartaDb.virada) {
-            const front = c.querySelector('.luck-card-front');
-            front.innerHTML = '';
-            front.appendChild(createCardUI(cartaDb));
-        } else {
-            c.onclick = () => escolherCartaSorteio(i);
-        }
-        grid.appendChild(c);
-    }
-};
+            const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
+            runTransaction(cartaRef, (carta) => {
+                if (carta && !carta.escolhidaPor) {
+                    carta.escolhidaPor = meuUid;
+                    carta.virada = true;
+                    return carta;
+                }
+                return;
+            });
+        };
 
-// 5. TRAVA E CLIQUE: FIREBASE GARANTE APENAS 1 CARTA POR JOGADOR
-window.escolherCartaSorteio = async function(indice) {
-    if (!state.salaId || state.luckBusy) return;
-    
-    const meuUid = auth.currentUser.uid;
-    const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
-    
-    if (snapshot.exists()) {
-        const cartasAtuais = snapshot.val();
-        const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
-        if (jaEscolhi) {
-            mostrarAlertaSeringal("Segure a emoção!", "Você já tirou a sua carta da sorte. Aguarde os outros.");
-            return; 
-        }
-    }
+        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA
+        window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
+            if (state.luckBusy) return;
+            state.luckBusy = true;
 
-    const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
-    runTransaction(cartaRef, (carta) => {
-        if (carta && !carta.escolhidaPor) {
-            carta.escolhidaPor = meuUid;
-            carta.virada = true;
-            return carta;
-        }
-        return;
-    });
-};
+            const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+            
+            function getPower(c) {
+                if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
+                if (c.rank === '3' && c.suit === 'Paus') return 99;
+                if (c.rank === 'A' && c.suit === 'Paus') return 98;
+                return c.power;
+            }
 
-// 6. O VEREDITO: SEPARA O DONO DO JOGO E O DONO DA JOGADA (A RODA)
-window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
-    if (state.luckBusy) return;
-    state.luckBusy = true;
+            // ACHAR A PATENTE (Dono do Jogo)
+            escolhidas.sort((a, b) => getPower(b) - getPower(a)); 
+            const cartaDono = escolhidas[0];
+            const uidDono = cartaDono.escolhidaPor;
+            const equipeDona = jogadores[uidDono].equipa;
 
-    const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
-    
-    function getPower(c) {
-        if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
-        if (c.rank === '3' && c.suit === 'Paus') return 99;
-        if (c.rank === 'A' && c.suit === 'Paus') return 98;
-        return c.power;
-    }
+            // ACHAR A VEZ / O ALVO (No Serra)
+            const cartasInimigas = escolhidas.filter(c => jogadores[c.escolhidaPor].equipa !== equipeDona);
+            cartasInimigas.sort((a, b) => getPower(a) - getPower(b)); 
+            const cartaSerra = cartasInimigas[0];
+            const uidSerra = cartaSerra.escolhidaPor;
 
-    // ACHAR O DONO DO JOGO (Maior carta)
-    escolhidas.sort((a, b) => getPower(b) - getPower(a)); 
-    const cartaDono = escolhidas[0];
-    const uidDono = cartaDono.escolhidaPor;
-    const equipeDona = jogadores[uidDono].equipa;
+            // MONTAR A RODA PELA DIREITA (O Serra é o Índice 0, Dono é o Último)
+            const timeDonoSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa === equipeDona && uid !== uidDono);
+            const timeSerraSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa !== equipeDona && uid !== uidSerra);
 
-    // ACHAR O ALVO/SERRA (Menor carta inimiga)
-    const cartasInimigas = escolhidas.filter(c => jogadores[c.escolhidaPor].equipa !== equipeDona);
-    cartasInimigas.sort((a, b) => getPower(a) - getPower(b)); 
-    const cartaSerra = cartasInimigas[0];
-    const uidSerra = cartaSerra.escolhidaPor;
+            let ordemDaMesa = [uidSerra];
+            const maxSobras = Math.max(timeDonoSobras.length, timeSerraSobras.length);
+            for (let i = 0; i < maxSobras; i++) {
+                if (i < timeDonoSobras.length) ordemDaMesa.push(timeDonoSobras[i]);
+                if (i < timeSerraSobras.length) ordemDaMesa.push(timeSerraSobras[i]);
+            }
+            ordemDaMesa.push(uidDono); 
 
-    // MONTAR A RODA PELA DIREITA (O Serra lidera, o Dono fecha)
-    const timeDonoSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa === equipeDona && uid !== uidDono);
-    const timeSerraSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa !== equipeDona && uid !== uidSerra);
+            // SALVANDO A ORDEM E AS PATENTES NO SEU JOGO
+            state.ordemTurnos = ordemDaMesa;
+            state.donoDoJogo = uidDono;    
+            state.donoDaJogada = uidSerra; 
+            
+            const meuUid = auth.currentUser.uid;
+            state.isDono = (meuUid === uidDono);
+            
+            const nomeDono = jogadores[uidDono].nome;
+            const nomeSerra = jogadores[uidSerra].nome;
 
-    let ordemDaMesa = [uidSerra]; // Índice 0: Primeiro a jogar
-    const maxSobras = Math.max(timeDonoSobras.length, timeSerraSobras.length);
-    for (let i = 0; i < maxSobras; i++) {
-        if (i < timeDonoSobras.length) ordemDaMesa.push(timeDonoSobras[i]);
-        if (i < timeSerraSobras.length) ordemDaMesa.push(timeSerraSobras[i]);
-    }
-    ordemDaMesa.push(uidDono); // Último a jogar
+            // TEXTOS NA TELA DE RESULTADO
+            const statusText = document.getElementById('final-status-text');
+            if (state.isDono) {
+                statusText.innerText = "VOCÊ DOMINA";
+                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#22c55e]";
+            } else if (meuUid === uidSerra) {
+                statusText.innerText = "VOCÊ NO SERRA";
+                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#ef4444]";
+            } else {
+                statusText.innerText = `${nomeDono} DOMINA`;
+                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-white";
+            }
 
-    // DEFININDO AS PATENTES NO ESTADO GLOBAL
-    state.ordemTurnos = ordemDaMesa;
-    state.donoDoJogo = uidDono;    // O Patrão da Mesa
-    state.donoDaJogada = uidSerra; // O Líder da primeira vaza (Quem tá no Serra)
-    
-    const meuUid = auth.currentUser.uid;
-    state.isDono = (meuUid === uidDono);
-    
-    const nomeDono = jogadores[uidDono].nome;
-    const nomeSerra = jogadores[uidSerra].nome;
+            document.getElementById('label-dono').innerText = nomeDono;
+            document.getElementById('label-serra').innerText = nomeSerra;
 
-    // TEXTOS NA TELA DE RESULTADO
-    const statusText = document.getElementById('final-status-text');
-    if (state.isDono) {
-        statusText.innerText = "VOCÊ DOMINA";
-        statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#22c55e]";
-    } else if (meuUid === uidSerra) {
-        statusText.innerText = "VOCÊ NO SERRA";
-        statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#ef4444]";
-    } else {
-        statusText.innerText = `${nomeDono} DOMINA`;
-        statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-white";
-    }
-
-    document.getElementById('label-dono').innerText = nomeDono;
-    document.getElementById('label-serra').innerText = nomeSerra;
-
-    setTimeout(() => {
-        navTo('screen-luck', 'screen-result');
-        state.luckBusy = false;
-    }, 1500);
-};
+            setTimeout(() => {
+                navTo('screen-luck', 'screen-result');
+                state.luckBusy = false;
+            }, 1500);
+        };
     
         </script>
 
