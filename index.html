@@ -2152,9 +2152,9 @@ function confirmGuardian() {
             }); 
         }
 
-// SISTEMA INTEGRADO: MOTOR DE SALAS E SORTEIO ONLINE (8 CARTAS)
-
-// 1. MOTOR DE MATCHMAKING (BUSCAR OU CRIAR SALA)
+// SISTEMA INTEGRADO: MOTOR DE SALAS E SORTEIO ONLINE (CORRIGIDO)
+                
+// 1. MOTOR DE MATCHMAKING (ESPERA O OPONENTE ANTES DE ABRIR A MESA)
 window.buscarPartida1x1 = async function() {
     const user = auth.currentUser;
     if (!user) {
@@ -2173,6 +2173,7 @@ window.buscarPartida1x1 = async function() {
         const salas = snapshot.val();
         for (let id in salas) {
             const s = salas[id];
+            // Entra apenas se a sala for 1v1 e tiver 1 vaga
             if (s.config.tipo === '1v1' && Object.keys(s.jogadores).length < 2) {
                 salaEncontrada = id;
                 break;
@@ -2181,32 +2182,42 @@ window.buscarPartida1x1 = async function() {
     }
 
     if (salaEncontrada) {
-        // ENTRA NA SALA EXISTENTE (Jogador 2)
+        // JOGADOR 2: ENTRA NA SALA E LIBERA O JOGO
         await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
             nome: nomeJogador, equipa: 'B'
         });
+        
+        // MUDA O STATUS PARA 'SORTEIO' (Isso vai abrir a tela para os dois)
+        await update(ref(database, `salas/${salaEncontrada}/config`), {
+            status: 'sorteio'
+        });
+        
         state.salaId = salaEncontrada;
         state.isOnline = true;
     } else {
-        // CRIA NOVA SALA (Jogador 1)
+        // JOGADOR 1: CRIA A SALA E FICA AGUARDANDO
         const novaSalaRef = push(ref(database, 'salas'));
         const cartasSorteio = gerar8CartasSorteio();
         
         await set(novaSalaRef, {
-            config: { tipo: '1v1', maxJogadores: 2, status: 'sorteio' },
+            // STATUS INICIAL É 'AGUARDANDO'
+            config: { tipo: '1v1', maxJogadores: 2, status: 'aguardando' }, 
             jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
             mesa_sorteio: cartasSorteio
         });
+        
         state.salaId = novaSalaRef.key;
         state.isOnline = true;
+        
+        // Fica no Lobby mostrando o aviso
+        mostrarAlertaSeringal("Dono da Mesa", "Aguardando um desafiante se conectar ao Seringal...\n\nSua mesa está aberta.");
     }
 
-    fecharAlertaSeringal();
-    navTo('screen-lobby', 'screen-luck');
+    // Ouve as mudanças na sala (incluindo quando o Jogador 2 entrar)
     ouvirEventosSala(state.salaId);
 };
 
-// 2. GERA AS 8 CARTAS NO BANCO DE DADOS
+// 2. GERA AS 8 CARTAS NO BANCO DE DADOS (Inalterado)
 window.gerar8CartasSorteio = function() {
     let d = [];
     suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
@@ -2222,23 +2233,35 @@ window.gerar8CartasSorteio = function() {
     return cartas;
 };
 
-// 3. MONITORAMENTO EM TEMPO REAL (OUVIR A MESA)
+// 3. MONITORAMENTO EM TEMPO REAL (AGORA ABRE A TELA SÓ NA HORA CERTA)
 window.ouvirEventosSala = function(idSala) {
-    onValue(ref(database, `salas/${idSala}/mesa_sorteio`), (snapshot) => {
+    // Agora ouvimos a SALA INTEIRA, não apenas as cartas, para saber quando o status muda
+    onValue(ref(database, `salas/${idSala}`), (snapshot) => {
         if(!snapshot.exists()) return;
-        const cartas = snapshot.val();
         
-        // Desenha a mesa visualmente
-        renderizarMesaSorteioOnline(cartas);
+        const sala = snapshot.val();
+        const status = sala.config.status;
+        const cartas = sala.mesa_sorteio;
         
-        const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
-        if (escolhidas.length === 2) {
-            setTimeout(() => finalizarSorteioMultiplayer(cartas), 1500);
+        // SE O STATUS MUDAR PARA 'SORTEIO', ABRE A TELA PARA OS DOIS JOGADORES AO MESMO TEMPO
+        if (status === 'sorteio' && document.getElementById('screen-luck').classList.contains('hidden')) {
+            fecharAlertaSeringal();
+            navTo('screen-lobby', 'screen-luck');
+        }
+
+        // Desenha as cartas visuais APENAS se o sorteio já começou
+        if (status === 'sorteio') {
+            renderizarMesaSorteioOnline(cartas);
+            
+            const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+            if (escolhidas.length === 2) {
+                setTimeout(() => finalizarSorteioMultiplayer(cartas, sala.jogadores), 1500);
+            }
         }
     });
 };
 
-// 4. VISÃO: DESENHA AS CARTAS NO HTML
+// 4. VISÃO: DESENHA AS CARTAS NO HTML (Inalterado)
 window.renderizarMesaSorteioOnline = function(cartasFirebase) {
     const grid = document.getElementById('luck-grid');
     if (!grid) return;
@@ -2267,14 +2290,29 @@ window.renderizarMesaSorteioOnline = function(cartasFirebase) {
     }
 };
 
-// 5. AÇÃO: CLICAR NA CARTA E ENVIAR AO FIREBASE
-window.escolherCartaSorteio = function(indice) {
+// 5. AÇÃO: CLICA NA CARTA (COM TRAVA PARA SÓ PEGAR UMA CARTA)
+window.escolherCartaSorteio = async function(indice) {
     if (!state.salaId || state.luckBusy) return;
+    
+    const meuUid = auth.currentUser.uid;
+    
+    // TRAVA DE SEGURANÇA: Verifica no Firebase se você JÁ escolheu alguma carta nesta mesa
+    const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
+    if (snapshot.exists()) {
+        const cartasAtuais = snapshot.val();
+        const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
+        
+        if (jaEscolhi) {
+            mostrarAlertaSeringal("Calma, Lenda!", "Você já tirou a sua carta. Aguarde o oponente.");
+            return; // Bloqueia o código aqui e não deixa virar mais cartas!
+        }
+    }
+
     const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
     
     runTransaction(cartaRef, (carta) => {
         if (carta && !carta.escolhidaPor) {
-            carta.escolhidaPor = auth.currentUser.uid;
+            carta.escolhidaPor = meuUid;
             carta.virada = true;
             return carta;
         }
@@ -2282,17 +2320,27 @@ window.escolherCartaSorteio = function(indice) {
     });
 };
 
-// 6. VEREDITO: QUEM DOMINA A MESA?
-window.finalizarSorteioMultiplayer = function(cartas) {
+// 6. VEREDITO: QUEM DOMINA A MESA? (Agora pega os nomes reais do Firebase)
+window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
     if (state.luckBusy) return;
     state.luckBusy = true;
 
     const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
     const meuUid = auth.currentUser.uid;
+    
     const minhaCarta = escolhidas.find(c => c.escolhidaPor === meuUid);
     const cartaInimigo = escolhidas.find(c => c.escolhidaPor !== meuUid);
 
     if (!minhaCarta || !cartaInimigo) return;
+
+    // Descobre o nome do inimigo através da lista de jogadores da sala
+    let nomeInimigoReal = "OPONENTE";
+    for (let uid in jogadores) {
+        if (uid !== meuUid) {
+            nomeInimigoReal = jogadores[uid].nome;
+        }
+    }
+    state.enemyName = nomeInimigoReal; // Atualiza o estado global com o nome verdadeiro
 
     function getPower(c) {
         if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
@@ -2303,10 +2351,10 @@ window.finalizarSorteioMultiplayer = function(cartas) {
 
     state.isDono = getPower(minhaCarta) > getPower(cartaInimigo);
     
-    // Atualiza interface de resultado
-    document.getElementById('final-status-text').innerText = state.isDono ? "VOCÊ DOMINA" : "OPONENTE DOMINA";
-    document.getElementById('label-dono').innerText = state.isDono ? player_name : "OPONENTE";
-    document.getElementById('label-serra').innerText = state.isDono ? "OPONENTE" : player_name;
+    // Atualiza interface de resultado com os nomes reais
+    document.getElementById('final-status-text').innerText = state.isDono ? "VOCÊ DOMINA" : `${state.enemyName} DOMINA`;
+    document.getElementById('label-dono').innerText = state.isDono ? player_name : state.enemyName;
+    document.getElementById('label-serra').innerText = state.isDono ? state.enemyName : player_name;
 
     setTimeout(() => {
         navTo('screen-luck', 'screen-result');
