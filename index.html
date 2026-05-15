@@ -2152,70 +2152,68 @@ function confirmGuardian() {
             }); 
         }
 
-                // 3. MOTOR DE MATCHMAKING ATUALIZADO (DUELO 1x1 ONLINE)
-        window.buscarPartida1x1 = function() {
-            const user = auth.currentUser;
-            if (!user) {
-                mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login novamente.");
-                return;
+                // 3. MOTOR DE SALAS E MATCHMAKING MULTIPLAYER (ATUALIZADO)
+window.buscarPartida1x1 = async function() {
+    const user = auth.currentUser;
+    if (!user) {
+        mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login novamente.");
+        return;
+    }
+
+    let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO DESCONHECIDO";
+    mostrarAlertaSeringal("Buscando...", "O Seringal está procurando uma mesa disponível...");
+
+    const salasRef = ref(database, 'salas');
+    const snapshot = await get(salasRef);
+    let salaEncontrada = null;
+
+    // Procura uma sala 1v1 que ainda tenha vaga (menos de 2 jogadores)
+    if (snapshot.exists()) {
+        const salas = snapshot.val();
+        for (let id in salas) {
+            const s = salas[id];
+            if (s.config.tipo === '1v1' && Object.keys(s.jogadores).length < 2) {
+                salaEncontrada = id;
+                break;
             }
+        }
+    }
 
-            let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO DESCONHECIDO";
-            
-            // Feedback inicial
-            mostrarAlertaSeringal("Buscando...", "O Seringal está procurando um oponente à sua altura...");
+    if (salaEncontrada) {
+        // ENTRA NA SALA EXISTENTE (Você é o Jogador 2)
+        await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
+            nome: nomeJogador,
+            equipa: 'B'
+        });
+        state.salaId = salaEncontrada;
+        state.isOnline = true;
+        // Define o nome do oponente (será atualizado via onValue depois)
+        state.enemyName = "OPONENTE"; 
+        
+    } else {
+        // CRIA UMA NOVA SALA (Você é o Jogador 1/Dono da Sala)
+        const novaSalaRef = push(ref(database, 'salas'));
+        const cartasSorteio = gerar8CartasSorteio(); // Função que cria as 8 cartas emborcadas
+        
+        await set(novaSalaRef, {
+            config: { tipo: '1v1', maxJogadores: 2, status: 'sorteio' },
+            jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
+            mesa_sorteio: cartasSorteio
+        });
+        state.salaId = novaSalaRef.key;
+        state.isOnline = true;
+        state.enemyName = "AGUARDANDO...";
+    }
 
-            const filaRef = ref(database, 'filaEspera1v1');
-
-            get(filaRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    // JOGADOR 2 ENCONTROU ALGUÉM
-                    const oponente = snapshot.val();
-                    
-                    if (oponente.uid === user.uid) {
-                        mostrarAlertaSeringal("Já na Fila", "Você já está aguardando um oponente na mesa!");
-                        return;
-                    }
-
-                    // Configura o estado para o modo Online
-                    state.isOnline = true;
-                    state.enemyName = oponente.nome; // Define o nome do inimigo como o de quem estava na fila
-                    
-                    // Limpa a fila e fecha o alerta
-                    remove(filaRef);
-                    fecharAlertaSeringal();
-
-                    // TRANSIÇÃO PARA O SORTEIO (Igual ao modo contra o bot)
-                    navTo('screen-lobby', 'screen-luck', renderLuckGrid);
-
-                } else {
-                    // JOGADOR 1 ENTRA NA FILA
-                    set(filaRef, {
-                        uid: user.uid,
-                        nome: nomeJogador
-                    });
-                    
-                    mostrarAlertaSeringal("Dono da Mesa", "Aguardando um desafiante se conectar ao Seringal...");
-
-                    // Ouve quando um oponente entra (o oponente remove a fila)
-                    const unsubscribe = onValue(filaRef, (snap) => {
-                        if (!snap.exists()) {
-                            // JOGADOR 1 TAMBÉM VAI PARA O SORTEIO
-                            state.isOnline = true;
-                            state.enemyName = "DESAFIANTE"; // Nome temporário até a criação das salas
-                            
-                            fecharAlertaSeringal();
-                            navTo('screen-lobby', 'screen-luck', renderLuckGrid);
-                            
-                            unsubscribe(); // Para de ouvir a fila
-                        }
-                    });
-                }
-            }).catch((error) => {
-                console.error(error);
-                mostrarAlertaSeringal("Aviso da Floresta", "Erro de conexão. As nuvens cobriram o Seringal.");
-            });
-        };
+    fecharAlertaSeringal();
+    
+    // Vai para a tela de sorteio
+    navTo('screen-lobby', 'screen-luck');
+    
+    // Ativa o monitoramento em tempo real da sala
+    ouvirEventosSala(state.salaId);
+};
+                
     
         </script>
 
