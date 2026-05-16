@@ -2251,7 +2251,7 @@ function confirmGuardian() {
             }
         };
 
-        // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
+                // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
         window.escolherCartaSorteio = async function(indice) {
             // Trava imediata local para evitar cliques duplos rápidos
             if (!state.salaId || state.luckBusy) return;
@@ -2287,15 +2287,29 @@ function confirmGuardian() {
             }
         };
 
-        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA (VERSÃO INFALÍVEL E ANTI-FIREBASE)
+        // FUNÇÃO NOVA: DESCOBRE QUAL IMAGEM CARREGAR BASEADO NO NOME DO INIMIGO
+        function getImagemArena(nomeInimigo) {
+            if (!nomeInimigo) return 'arena.png';
+            const n = nomeInimigo.toLowerCase();
+            
+            // Procura o nome do avatar na string do jogador e retorna a imagem correspondente
+            if (n.includes('testúrion') || n.includes('testurion')) return 'arena_testurion.png';
+            if (n.includes('lentorion')) return 'arena_lentorion.png';
+            if (n.includes('caimã') || n.includes('caima')) return 'arena_caimakay.png';
+            if (n.includes('bigode')) return 'arena_zebigode.png';
+            if (n.includes('baccarena')) return 'arena_baccarena.png';
+            if (n.includes('aethernox')) return 'arena_aethernox.png';
+            if (n.includes('yara')) return 'arena_yara.png';
+            
+            return 'arena.png'; // Fundo de segurança
+        }
+
+        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA
         window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
             try {
                 if (state.sorteioResolvido) return;
                 
-                // Filtro blindado novamente contra o truque do Firebase
                 const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor && c.escolhidaPor !== "");
-                
-                // Trava final: Só continua se os 2 jogadores REALMENTE escolheram
                 if (escolhidas.length < 2) return;
                 
                 state.sorteioResolvido = true;
@@ -2335,6 +2349,9 @@ function confirmGuardian() {
                 const nomeDono = (jogadores && jogadores[uidDono] && jogadores[uidDono].nome) ? jogadores[uidDono].nome : "ADVERSÁRIO";
                 const nomeSerra = (jogadores && jogadores[uidSerra] && jogadores[uidSerra].nome) ? jogadores[uidSerra].nome : "ADVERSÁRIO";
 
+                // 👉 AQUI SALVAMOS O NOME DO INIMIGO NA MEMÓRIA!
+                state.enemyName = state.isDono ? nomeSerra : nomeDono;
+
                 // 4. SISTEMA VISUAL: TEXTOS E ESTILOS CONFORME O STATUS DO JOGADOR
                 const statusText = document.getElementById('final-status-text');
                 if (state.isDono) {
@@ -2348,7 +2365,6 @@ function confirmGuardian() {
                 document.getElementById('label-dono').innerText = nomeDono;
                 document.getElementById('label-serra').innerText = nomeSerra;
 
-                // 5. TRANSIÇÃO DE TELA COM TEMPO SUFICIENTE PARA REVELAR OS NOMES
                 setTimeout(() => {
                     navTo('screen-luck', 'screen-result');
                     state.luckBusy = false;
@@ -2367,14 +2383,19 @@ function confirmGuardian() {
 
         window.irParaMesa = function() {
             const mesaMadeira = document.querySelector('.wood-table');
+            const battleMsg = document.getElementById('battle-msg'); 
             
-            // Troca a textura da mesa dependendo do tipo de jogo
-            if (state.tipoJogo === '2v2') {
-                mesaMadeira.style.backgroundImage = "url('arena_2x2.png')";
-            } else if (state.tipoJogo === '3v3') {
-                mesaMadeira.style.backgroundImage = "url('arena_3x3.png')";
+            fecharAlertaSeringal(); 
+
+            // ROTEADOR: Qual imagem de mesa puxar?
+            if (state.tipoJogo === '2v2' || state.tipoJogo === '3v3') {
+                mesaMadeira.style.backgroundImage = "url('arena_multiplayer.png')";
+                if (battleMsg) battleMsg.classList.add('hidden'); // Esconde o logo gigante para caber as caixas de nome
             } else {
-                mesaMadeira.style.backgroundImage = "url('arena.png')"; 
+                // Aqui a mágica: puxa a imagem do adversário usando o nome dele!
+                const imagemAdversario = getImagemArena(state.enemyName);
+                mesaMadeira.style.backgroundImage = `url('${imagemAdversario}')`;
+                if (battleMsg) battleMsg.classList.remove('hidden');
             }
 
             if (state.isOnline) {
@@ -2424,6 +2445,63 @@ function confirmGuardian() {
             window.ouvirMesaJogoOnline();
         };
 
+        // UI DA ARENA: CORRIGE O BUG DAS CARTAS INVISÍVEIS NA MÃO
+        window.updateArenaUI = function() {
+            document.getElementById('score-p').innerText = state.pScore;
+            document.getElementById('score-e').innerText = state.eScore;
+            
+            let meuNome = "GUARDIÃO";
+            if (auth.currentUser && auth.currentUser.displayName) {
+                meuNome = auth.currentUser.displayName.split(' ')[0]; // Pega só o primeiro nome
+            }
+            document.getElementById('ui-player-name').innerText = meuNome.toUpperCase() + ":";
+
+            document.getElementById('ui-role-p').innerText = state.isDono ? "DONO DA MESA" : "NO SERRA";
+            document.getElementById('ui-role-e').innerText = !state.isDono ? "DONO DA MESA" : "NO SERRA";
+
+            if (state.isDono) {
+                document.getElementById('serras-container-p').classList.add('hidden');
+                document.getElementById('serras-container-e').classList.remove('hidden');
+                document.getElementById('serras-e').innerText = `${state.eSerraScore}/3`;
+            } else {
+                document.getElementById('serras-container-e').classList.add('hidden');
+                document.getElementById('serras-container-p').classList.remove('hidden');
+                document.getElementById('serras-p').innerText = `${state.pSerraScore}/3`;
+            }
+
+            const countUI = document.getElementById('deck-count-ui');
+            if (countUI) countUI.innerText = state.deck.length;
+            
+            const uiVira = document.getElementById('ui-vira');
+            if (uiVira && state.vira) {
+                uiVira.innerHTML = '';
+                uiVira.appendChild(createCardUI(state.vira));
+            }
+
+            // 👉 A CORREÇÃO DA IMAGEM 3: DESENHA AS CARTAS NA MÃO 👈
+            const uiHand = document.getElementById('ui-hand');
+            if (uiHand) {
+                uiHand.innerHTML = ''; 
+                if (state.pHand && state.pHand.length > 0) {
+                    state.pHand.forEach((card, i) => {
+                        const cUI = createCardUI(card, false, () => playPlayerCard(i));
+                        if (!state.canPlay) cUI.classList.add('card-disabled');
+                        uiHand.appendChild(cUI);
+                    });
+                }
+            }
+
+            const eHandUI = document.getElementById('enemy-hand-table');
+            if (eHandUI) {
+                eHandUI.innerHTML = '';
+                if (state.eHand && state.eHand.length > 0) {
+                    state.eHand.forEach(() => {
+                        eHandUI.appendChild(createCardUI(null, true));
+                    });
+                }
+            }
+        };
+
         window.ouvirMesaJogoOnline = function() {
             onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
                 if (!snapshot.exists()) return;
@@ -2447,17 +2525,20 @@ function confirmGuardian() {
                 document.getElementById('ui-monte').classList.remove('hidden');
                 
                 const uiVira = document.getElementById('ui-vira');
-                uiVira.innerHTML = '';
-                uiVira.appendChild(createCardUI(state.vira));
+                if (uiVira && state.vira) {
+                    uiVira.innerHTML = '';
+                    uiVira.appendChild(createCardUI(state.vira));
+                }
 
                 const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
                 document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
                 document.getElementById('trump-indicator').classList.remove('hidden');
 
-                updateArenaUI();
+                // 👉 FORÇA A TELA A ATUALIZAR E MOSTRAR AS CARTAS NA MÃO 👈
+                window.updateArenaUI();
             });
         };
-</script>
+    </script>
 
 
         </div> </div> <div class="hidden lg:flex flex-col w-[320px] h-[90vh] max-h-[850px] bg-[#2a0808] border-2 border-[#22c55e] rounded-2xl ml-8 p-6 shadow-[0_0_25px_rgba(34,197,94,0.15)]">
