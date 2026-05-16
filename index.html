@@ -2200,6 +2200,7 @@ function confirmGuardian() {
             return cartas;
         };
 
+                // 4. OUVIR A SALA (CORRIGIDO COM BLINDAGEM ANTI-FIREBASE)
         window.ouvirEventosSala = function(idSala) {
             onValue(ref(database, `salas/${idSala}`), (snapshot) => {
                 if(!snapshot.exists()) return;
@@ -2214,7 +2215,10 @@ function confirmGuardian() {
 
                 if (status === 'sorteio') {
                     window.renderizarMesaSorteioOnline(cartas);
-                    const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+                    
+                    // O SEGREDO ESTÁ AQUI: Ignora as cartas vazias ou apagadas pelo Firebase
+                    const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor && c.escolhidaPor !== "");
+                    
                     if (escolhidas.length === sala.config.maxJogadores) {
                         setTimeout(() => window.finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
                     }
@@ -2247,7 +2251,7 @@ function confirmGuardian() {
             }
         };
 
-                // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
+        // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
         window.escolherCartaSorteio = async function(indice) {
             // Trava imediata local para evitar cliques duplos rápidos
             if (!state.salaId || state.luckBusy) return;
@@ -2283,15 +2287,19 @@ function confirmGuardian() {
             }
         };
 
-        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA (VERSÃO INFALÍVEL PARA 1x1)
+        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA (VERSÃO INFALÍVEL E ANTI-FIREBASE)
         window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
             try {
-                // Evita que o jogo tente processar o resultado mais de uma vez na mesma rodada
                 if (state.sorteioResolvido) return;
+                
+                // Filtro blindado novamente contra o truque do Firebase
+                const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor && c.escolhidaPor !== "");
+                
+                // Trava final: Só continua se os 2 jogadores REALMENTE escolheram
+                if (escolhidas.length < 2) return;
+                
                 state.sorteioResolvido = true;
 
-                const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
-                
                 function getPower(c) {
                     if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
                     if (c.rank === '3' && c.suit === 'Paus') return 99;
@@ -2324,8 +2332,8 @@ function confirmGuardian() {
                 const meuUid = auth.currentUser.uid;
                 state.isDono = (meuUid === uidDono);
                 
-                const nomeDono = jogadores[uidDono].nome || "ADVERSÁRIO";
-                const nomeSerra = jogadores[uidSerra].nome || "ADVERSÁRIO";
+                const nomeDono = (jogadores && jogadores[uidDono] && jogadores[uidDono].nome) ? jogadores[uidDono].nome : "ADVERSÁRIO";
+                const nomeSerra = (jogadores && jogadores[uidSerra] && jogadores[uidSerra].nome) ? jogadores[uidSerra].nome : "ADVERSÁRIO";
 
                 // 4. SISTEMA VISUAL: TEXTOS E ESTILOS CONFORME O STATUS DO JOGADOR
                 const statusText = document.getElementById('final-status-text');
@@ -2347,12 +2355,13 @@ function confirmGuardian() {
                 }, 1500);
 
             } catch (erro) {
+                console.error(erro);
                 alert("Erro ao ler o baralho do Sorteio: " + erro.message);
                 state.luckBusy = false;
             }
         };
 
-        // =========================================================
+        // ========================================================
         // O CARTEADOR ONLINE E ROTEADOR DE ARENAS
         // =========================================================
 
