@@ -2184,8 +2184,10 @@ function confirmGuardian() {
             ouvirEventosSala(state.salaId);
         };
 
-        // 👉 ATALHO RELIGADO AQUI!
-        window.buscarPartida1x1 = () => window.buscarPartida('1v1');
+        // 👉 // ATALHOS DOS BOTÕES DO LOBBY
+window.buscarPartida1x1 = () => window.buscarPartida('1v1');
+window.buscarPartida2x2 = () => window.buscarPartida('2v2');
+window.buscarPartida3x3 = () => window.buscarPartida('3v3');
 
         // 2. GERA AS 8 CARTAS DO SORTEIO NO BANCO DE DADOS
         window.gerar8CartasSorteio = function() {
