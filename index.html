@@ -958,8 +958,8 @@
             { id: 'K', power: 6, pts: 4 }, { id: '7', power: 7, pts: 10 }, { id: 'A', power: 8, pts: 11 }
         ];
 
-        // --- ESTADO DO JOGO ---
-                let state = {
+                // --- ESTADO DO JOGO ---
+        let state = {
             deck: [], pHand: [], eHand: [], vira: null, trumpSuit: null,
             pScore: 0, eScore: 0,
             pSerraScore: 1, eSerraScore: 1, // Começa no 1/3
@@ -973,7 +973,8 @@
             ePopoUsed: false,
             // --- NOVAS VARIÁVEIS PARA O MODO ONLINE ---
             enemyName: "PIRARUCOG", // O padrão continua sendo o bot
-            isOnline: false         // Avisa ao jogo se estamos conectados na rede
+            isOnline: false,        // <-- Não esqueça dessa vírgula aqui!
+            tipoJogo: '1v1'         // 👉 NOVA VARIÁVEL PARA A MEMÓRIA DA ARENA
         };
 
         // --- FUNÇÕES DE NAVEGAÇÃO E UI ---
