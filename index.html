@@ -2247,91 +2247,109 @@ function confirmGuardian() {
             }
         };
 
+                // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
         window.escolherCartaSorteio = async function(indice) {
+            // Trava imediata local para evitar cliques duplos rápidos
             if (!state.salaId || state.luckBusy) return;
-            const meuUid = auth.currentUser.uid;
-            const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
-            if (snapshot.exists()) {
-                const cartasAtuais = snapshot.val();
-                const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
-                if (jaEscolhi) {
-                    mostrarAlertaSeringal("Segure a emoção!", "Você já tirou a sua carta da sorte. Aguarde os outros.");
-                    return; 
+            state.luckBusy = true; 
+            
+            try {
+                const meuUid = auth.currentUser.uid;
+                const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
+                
+                if (snapshot.exists()) {
+                    const cartasAtuais = snapshot.val();
+                    const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
+                    if (jaEscolhi) {
+                        mostrarAlertaSeringal("Segure a emoção!", "Você já tirou a sua carta da sorte. Aguarde os outros.");
+                        state.luckBusy = false;
+                        return; 
+                    }
                 }
+
+                const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
+                await runTransaction(cartaRef, (carta) => {
+                    if (carta && !carta.escolhidaPor) {
+                        carta.escolhidaPor = meuUid;
+                        carta.virada = true;
+                        return carta;
+                    }
+                    return;
+                });
+            } catch (erro) {
+                alert("Erro ao puxar a carta na mata: " + erro.message);
+            } finally {
+                state.luckBusy = false; 
             }
-            const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
-            runTransaction(cartaRef, (carta) => {
-                if (carta && !carta.escolhidaPor) {
-                    carta.escolhidaPor = meuUid;
-                    carta.virada = true;
-                    return carta;
-                }
-                return;
-            });
         };
 
+        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA (VERSÃO INFALÍVEL PARA 1x1)
         window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
-            if (state.luckBusy) return;
-            state.luckBusy = true;
-            const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
-            
-            function getPower(c) {
-                if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
-                if (c.rank === '3' && c.suit === 'Paus') return 99;
-                if (c.rank === 'A' && c.suit === 'Paus') return 98;
-                return c.power;
-            }
+            try {
+                // Evita que o jogo tente processar o resultado mais de uma vez na mesma rodada
+                if (state.sorteioResolvido) return;
+                state.sorteioResolvido = true;
 
-            escolhidas.sort((a, b) => getPower(b) - getPower(a)); 
-            const cartaDono = escolhidas[0];
-            const uidDono = cartaDono.escolhidaPor;
-            const equipeDona = jogadores[uidDono].equipa;
+                const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
+                
+                function getPower(c) {
+                    if (c.rank === 'Q' && c.suit === 'Espadas') return 100;
+                    if (c.rank === '3' && c.suit === 'Paus') return 99;
+                    if (c.rank === 'A' && c.suit === 'Paus') return 98;
+                    return c.power || 0;
+                }
 
-            const cartasInimigas = escolhidas.filter(c => jogadores[c.escolhidaPor].equipa !== equipeDona);
-            cartasInimigas.sort((a, b) => getPower(a) - getPower(b)); 
-            const cartaSerra = cartasInimigas[0];
-            const uidSerra = cartaSerra.escolhidaPor;
+                // 1. ORDENA QUEM TIROU A CARTA MAIOR (O DONO DA MESA)
+                escolhidas.sort((a, b) => getPower(b) - getPower(a)); 
+                const cartaDono = escolhidas[0];
+                const uidDono = cartaDono.escolhidaPor;
 
-            const timeDonoSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa === equipeDona && uid !== uidDono);
-            const timeSerraSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa !== equipeDona && uid !== uidSerra);
+                // 2. PEGA A OUTRA CARTA DA MESA (O OPONENTE QUE VAI NO SERRA)
+                const cartasInimigas = escolhidas.filter(c => c.escolhidaPor !== uidDono);
+                
+                if (cartasInimigas.length === 0) {
+                    alert("A conexão com o adversário caiu! Reiniciando a mesa...");
+                    location.reload();
+                    return;
+                }
 
-            let ordemDaMesa = [uidSerra];
-            const maxSobras = Math.max(timeDonoSobras.length, timeSerraSobras.length);
-            for (let i = 0; i < maxSobras; i++) {
-                if (i < timeDonoSobras.length) ordemDaMesa.push(timeDonoSobras[i]);
-                if (i < timeSerraSobras.length) ordemDaMesa.push(timeSerraSobras[i]);
-            }
-            ordemDaMesa.push(uidDono); 
+                const cartaSerra = cartasInimigas[0];
+                const uidSerra = cartaSerra.escolhidaPor;
 
-            state.ordemTurnos = ordemDaMesa;
-            state.donoDoJogo = uidDono;    
-            state.donoDaJogada = uidSerra; 
-            
-            const meuUid = auth.currentUser.uid;
-            state.isDono = (meuUid === uidDono);
-            
-            const nomeDono = jogadores[uidDono].nome;
-            const nomeSerra = jogadores[uidSerra].nome;
+                // 3. ATRIBUI AS POSIÇÕES DE TURNO E PONTUAÇÃO
+                state.ordemTurnos = [uidSerra, uidDono];
+                state.donoDoJogo = uidDono;    
+                state.donoDaJogada = uidSerra; 
+                
+                const meuUid = auth.currentUser.uid;
+                state.isDono = (meuUid === uidDono);
+                
+                const nomeDono = jogadores[uidDono].nome || "ADVERSÁRIO";
+                const nomeSerra = jogadores[uidSerra].nome || "ADVERSÁRIO";
 
-            const statusText = document.getElementById('final-status-text');
-            if (state.isDono) {
-                statusText.innerText = "VOCÊ DOMINA";
-                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#22c55e]";
-            } else if (meuUid === uidSerra) {
-                statusText.innerText = "VOCÊ NO SERRA";
-                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#ef4444]";
-            } else {
-                statusText.innerText = `${nomeDono} DOMINA`;
-                statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-white";
-            }
+                // 4. SISTEMA VISUAL: TEXTOS E ESTILOS CONFORME O STATUS DO JOGADOR
+                const statusText = document.getElementById('final-status-text');
+                if (state.isDono) {
+                    statusText.innerText = "VOCÊ DOMINA";
+                    statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#22c55e]";
+                } else {
+                    statusText.innerText = "VOCÊ NO SERRA";
+                    statusText.className = "text-3xl text-center font-black font-cinzel mb-6 tracking-widest uppercase text-[#ef4444]";
+                }
 
-            document.getElementById('label-dono').innerText = nomeDono;
-            document.getElementById('label-serra').innerText = nomeSerra;
+                document.getElementById('label-dono').innerText = nomeDono;
+                document.getElementById('label-serra').innerText = nomeSerra;
 
-            setTimeout(() => {
-                navTo('screen-luck', 'screen-result');
+                // 5. TRANSIÇÃO DE TELA COM TEMPO SUFICIENTE PARA REVELAR OS NOMES
+                setTimeout(() => {
+                    navTo('screen-luck', 'screen-result');
+                    state.luckBusy = false;
+                }, 1500);
+
+            } catch (erro) {
+                alert("Erro ao ler o baralho do Sorteio: " + erro.message);
                 state.luckBusy = false;
-            }, 1500);
+            }
         };
 
         // =========================================================
