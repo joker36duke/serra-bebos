@@ -2014,7 +2014,6 @@ function confirmGuardian() {
         import { getDatabase, ref, set, onValue, get, push, remove, update, runTransaction, onDisconnect } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
         
-        // Suas credenciais exclusivas do projeto
         const firebaseConfig = {
             apiKey: "AIzaSyBTAaHa5R7MZPDeIWdCqSlVByqsVfXQmUU",
             projectId: "serra-bebos",
@@ -2025,8 +2024,6 @@ function confirmGuardian() {
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth(app); 
-
-        console.log("Motor do Firebase Ligado e Autenticação Pronta!");
 
         // ==========================================
         // RECUPERAÇÃO DE SENHA E CADASTRO
@@ -2107,90 +2104,87 @@ function confirmGuardian() {
         }
                 
         // =========================================================
-        // MOTOR UNIVERSAL SERRA BEBOS: 1x1, 2x2 e 3x3 (O DEFINITIVO)
+        // MOTOR UNIVERSAL SERRA BEBOS: O DEFINITIVO
         // =========================================================
 
-        // 1. MATCHMAKING INTELIGENTE (COM PROTEÇÃO ANTI-FANTASMA)
         window.buscarPartida = async function(tipoJogo) {
-            const user = auth.currentUser;
-            if (!user) {
-                mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login.");
-                return;
-            }
+            try {
+                state.tipoJogo = tipoJogo; // GRAVA O MODO DE JOGO
+                const user = auth.currentUser;
+                if (!user) {
+                    mostrarAlertaSeringal("Erro", "O Bebo-Mor não reconhece você. Faça login.");
+                    return;
+                }
 
-            const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
-            const maxJogadores = limites[tipoJogo];
-            let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
+                mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
 
-            mostrarAlertaSeringal("Buscando...", `Preparando a mesa para ${tipoJogo}. Aguarde...`);
+                const limites = { '1v1': 2, '2v2': 4, '3v3': 6 };
+                const maxJogadores = limites[tipoJogo];
+                let nomeJogador = user.displayName ? user.displayName.toUpperCase() : "GUARDIÃO";
 
-            const salasRef = ref(database, 'salas');
-            const snapshot = await get(salasRef);
-            let salaEncontrada = null;
+                const salasRef = ref(database, 'salas');
+                const snapshot = await get(salasRef);
+                let salaEncontrada = null;
 
-            if (snapshot.exists()) {
-                const salas = snapshot.val();
-                for (let id in salas) {
-                    const s = salas[id];
-                    // TRAVA DE SEGURANÇA: Só entra se a sala estiver AGUARDANDO e com vaga real
-                    if (s.config && s.config.tipo === tipoJogo && s.config.status === 'aguardando' && Object.keys(s.jogadores).length < maxJogadores && !s.jogadores[user.uid]) {
-                        salaEncontrada = id;
-                        break;
+                if (snapshot.exists()) {
+                    const salas = snapshot.val();
+                    for (let id in salas) {
+                        const s = salas[id];
+                        if (s.config && s.config.tipo === tipoJogo && s.config.status === 'aguardando' && Object.keys(s.jogadores).length < maxJogadores && !s.jogadores[user.uid]) {
+                            salaEncontrada = id;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (salaEncontrada) {
-                // ENTRA NA SALA EXISTENTE
-                const salaRef = ref(database, `salas/${salaEncontrada}`);
-                const snapSala = await get(salaRef);
-                const salaAtual = snapSala.val();
-                const qtdAtual = Object.keys(salaAtual.jogadores).length;
-                const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
+                if (salaEncontrada) {
+                    const salaRef = ref(database, `salas/${salaEncontrada}`);
+                    const snapSala = await get(salaRef);
+                    const salaAtual = snapSala.val();
+                    const qtdAtual = Object.keys(salaAtual.jogadores).length;
+                    const equipe = qtdAtual % 2 === 0 ? 'A' : 'B';
 
-                await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
-                    nome: nomeJogador, equipa: equipe
-                });
+                    await update(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`), {
+                        nome: nomeJogador, equipa: equipe
+                    });
 
-                // Se a sala encheu com a entrada, muda o status para liberar as duas telas!
-                if (qtdAtual + 1 === maxJogadores) {
-                    await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
+                    if (qtdAtual + 1 === maxJogadores) {
+                        await update(ref(database, `salas/${salaEncontrada}/config`), { status: 'sorteio' });
+                    }
+                    
+                    state.salaId = salaEncontrada;
+                    state.isOnline = true;
+                    onDisconnect(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`)).remove();
+
+                } else {
+                    const novaSalaRef = push(ref(database, 'salas'));
+                    const cartasSorteio = window.gerar8CartasSorteio();
+                    
+                    await set(novaSalaRef, {
+                        config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando', criador: user.uid },
+                        jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
+                        mesa_sorteio: cartasSorteio
+                    });
+                    
+                    onDisconnect(novaSalaRef).remove();
+                    state.salaId = novaSalaRef.key;
+                    state.isOnline = true;
+                    mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
                 }
-                
-                state.salaId = salaEncontrada;
-                state.isOnline = true;
-                
-                // Se o jogador fechar o app, ele sai da cadeira
-                onDisconnect(ref(database, `salas/${salaEncontrada}/jogadores/${user.uid}`)).remove();
 
-            } else {
-                // CRIA SALA NOVA E SENTA PRA ESPERAR
-                const novaSalaRef = push(ref(database, 'salas'));
-                const cartasSorteio = gerar8CartasSorteio();
-                
-                await set(novaSalaRef, {
-                    config: { tipo: tipoJogo, maxJogadores: maxJogadores, status: 'aguardando', criador: user.uid },
-                    jogadores: { [user.uid]: { nome: nomeJogador, equipa: 'A' } },
-                    mesa_sorteio: cartasSorteio
-                });
-                
-                // 🚨 A MAGIA ACONTECE AQUI: Se o criador atualizar a página, o Firebase DETONA a sala inteira!
-                onDisconnect(novaSalaRef).remove();
-                
-                state.salaId = novaSalaRef.key;
-                state.isOnline = true;
-                mostrarAlertaSeringal("Dono da Mesa", `Aguardando oponentes para ${tipoJogo}...\nSua mesa está aberta na floresta.`);
+                window.ouvirEventosSala(state.salaId);
+
+            } catch (error) {
+                alert("Ocorreu um Erro no Motor do Jogo: " + error.message);
+                fecharAlertaSeringal();
             }
-
-            ouvirEventosSala(state.salaId);
         };
 
-        // 👉 // ATALHOS DOS BOTÕES DO LOBBY
-window.buscarPartida1x1 = () => window.buscarPartida('1v1');
-window.buscarPartida2x2 = () => window.buscarPartida('2v2');
-window.buscarPartida3x3 = () => window.buscarPartida('3v3');
+        // ATALHOS DOS BOTÕES DO LOBBY
+        window.buscarPartida1x1 = () => window.buscarPartida('1v1');
+        window.buscarPartida2x2 = () => window.buscarPartida('2v2');
+        window.buscarPartida3x3 = () => window.buscarPartida('3v3');
 
-        // 2. GERA AS 8 CARTAS DO SORTEIO NO BANCO DE DADOS
         window.gerar8CartasSorteio = function() {
             let d = [];
             suits.forEach(s => { rankMap.forEach(r => { d.push({ suit: s, rank: r.id, power: r.power, pts: r.pts }); }); });
@@ -2206,68 +2200,57 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
             return cartas;
         };
 
-        // 3. MONITORAMENTO DA SALA (Vigia se o adversário entrou)
         window.ouvirEventosSala = function(idSala) {
             onValue(ref(database, `salas/${idSala}`), (snapshot) => {
                 if(!snapshot.exists()) return;
-                
                 const sala = snapshot.val();
                 const status = sala.config.status;
                 const cartas = sala.mesa_sorteio;
                 
-                // SE A SALA ENCHER, ABRE O SORTEIO PARA TODOS
                 if (status === 'sorteio' && document.getElementById('screen-luck').classList.contains('hidden')) {
                     fecharAlertaSeringal();
                     navTo('screen-lobby', 'screen-luck');
                 }
 
                 if (status === 'sorteio') {
-                    renderizarMesaSorteioOnline(cartas);
-                    
+                    window.renderizarMesaSorteioOnline(cartas);
                     const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
                     if (escolhidas.length === sala.config.maxJogadores) {
-                        setTimeout(() => finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
+                        setTimeout(() => window.finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
                     }
                 }
             });
         };
 
-        // 4. VISUAL DAS CARTAS (Desenha o HTML ao vivo)
         window.renderizarMesaSorteioOnline = function(cartasFirebase) {
             const grid = document.getElementById('luck-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            
             for (let i = 0; i < 8; i++) {
                 const cartaDb = cartasFirebase[i];
                 const c = document.createElement('div');
                 c.className = 'luck-card';
-                
                 c.innerHTML = `
                     <div class="luck-card-inner ${cartaDb.virada ? 'flipped' : ''}">
                         <div class="luck-card-back card-back-style overflow-hidden"></div>
                         <div class="luck-card-front"></div>
                     </div>
                 `;
-
                 if (cartaDb.virada) {
                     const front = c.querySelector('.luck-card-front');
                     front.innerHTML = '';
                     front.appendChild(createCardUI(cartaDb));
                 } else {
-                    c.onclick = () => escolherCartaSorteio(i);
+                    c.onclick = () => window.escolherCartaSorteio(i);
                 }
                 grid.appendChild(c);
             }
         };
 
-        // 5. TRAVA E CLIQUE: GARANTE 1 CARTA POR JOGADOR NO FIREBASE
         window.escolherCartaSorteio = async function(indice) {
             if (!state.salaId || state.luckBusy) return;
-            
             const meuUid = auth.currentUser.uid;
             const snapshot = await get(ref(database, `salas/${state.salaId}/mesa_sorteio`));
-            
             if (snapshot.exists()) {
                 const cartasAtuais = snapshot.val();
                 const jaEscolhi = Object.values(cartasAtuais).some(c => c.escolhidaPor === meuUid);
@@ -2276,7 +2259,6 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
                     return; 
                 }
             }
-
             const cartaRef = ref(database, `salas/${state.salaId}/mesa_sorteio/${indice}`);
             runTransaction(cartaRef, (carta) => {
                 if (carta && !carta.escolhidaPor) {
@@ -2288,11 +2270,9 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
             });
         };
 
-        // 6. O VEREDITO: DEFINE O PATRÃO E QUEM VAI PRO SERRA
         window.finalizarSorteioMultiplayer = function(cartas, jogadores) {
             if (state.luckBusy) return;
             state.luckBusy = true;
-
             const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor !== null);
             
             function getPower(c) {
@@ -2302,19 +2282,16 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
                 return c.power;
             }
 
-            // ACHAR A PATENTE (Dono do Jogo)
             escolhidas.sort((a, b) => getPower(b) - getPower(a)); 
             const cartaDono = escolhidas[0];
             const uidDono = cartaDono.escolhidaPor;
             const equipeDona = jogadores[uidDono].equipa;
 
-            // ACHAR A VEZ / O ALVO (No Serra)
             const cartasInimigas = escolhidas.filter(c => jogadores[c.escolhidaPor].equipa !== equipeDona);
             cartasInimigas.sort((a, b) => getPower(a) - getPower(b)); 
             const cartaSerra = cartasInimigas[0];
             const uidSerra = cartaSerra.escolhidaPor;
 
-            // MONTAR A RODA PELA DIREITA (O Serra é o Índice 0, Dono é o Último)
             const timeDonoSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa === equipeDona && uid !== uidDono);
             const timeSerraSobras = Object.keys(jogadores).filter(uid => jogadores[uid].equipa !== equipeDona && uid !== uidSerra);
 
@@ -2326,7 +2303,6 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
             }
             ordemDaMesa.push(uidDono); 
 
-            // SALVANDO A ORDEM E AS PATENTES NO SEU JOGO
             state.ordemTurnos = ordemDaMesa;
             state.donoDoJogo = uidDono;    
             state.donoDaJogada = uidSerra; 
@@ -2337,7 +2313,6 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
             const nomeDono = jogadores[uidDono].nome;
             const nomeSerra = jogadores[uidSerra].nome;
 
-            // TEXTOS NA TELA DE RESULTADO
             const statusText = document.getElementById('final-status-text');
             if (state.isDono) {
                 statusText.innerText = "VOCÊ DOMINA";
@@ -2358,8 +2333,105 @@ window.buscarPartida3x3 = () => window.buscarPartida('3v3');
                 state.luckBusy = false;
             }, 1500);
         };
-    
-        </script>
+
+        // =========================================================
+        // O CARTEADOR ONLINE E ROTEADOR DE ARENAS
+        // =========================================================
+
+        window.irParaMesa = function() {
+            const mesaMadeira = document.querySelector('.wood-table');
+            
+            // Troca a textura da mesa dependendo do tipo de jogo
+            if (state.tipoJogo === '2v2') {
+                mesaMadeira.style.backgroundImage = "url('arena_2x2.png')";
+            } else if (state.tipoJogo === '3v3') {
+                mesaMadeira.style.backgroundImage = "url('arena_3x3.png')";
+            } else {
+                mesaMadeira.style.backgroundImage = "url('arena.png')"; 
+            }
+
+            if (state.isOnline) {
+                navTo('screen-result', 'screen-battle', window.startSeringalGameOnline);
+            } else {
+                navTo('screen-result', 'screen-battle', startSeringalGame); 
+            }
+        };
+
+        window.startSeringalGameOnline = async function() {
+            document.getElementById('bisca-alert').classList.add('hidden');
+            document.getElementById('trick-result-msg').classList.add('hidden');
+            
+            const meuUid = auth.currentUser.uid;
+
+            if (state.isDono) {
+                let novoBaralho = createFullDeck();
+                shuffle(novoBaralho);
+
+                const uidSerra = state.ordemTurnos[0];
+                const uidDono = state.ordemTurnos[1];
+
+                let maoSerra = [novoBaralho.pop(), novoBaralho.pop(), novoBaralho.pop(), novoBaralho.pop()];
+                let maoDono = [novoBaralho.pop(), novoBaralho.pop(), novoBaralho.pop(), novoBaralho.pop()];
+
+                let cartaVira = novoBaralho.pop();
+                novoBaralho.unshift(cartaVira);
+
+                const dadosMesa = {
+                    baralho: novoBaralho,
+                    vira: cartaVira,
+                    trunfo: cartaVira.suit,
+                    maos: {
+                        [uidSerra]: maoSerra,
+                        [uidDono]: maoDono
+                    },
+                    estado: {
+                        turnoAtual: uidSerra, 
+                        cartasJogadas: {}, 
+                        pontos: { [uidSerra]: 0, [uidDono]: 0 }
+                    }
+                };
+                await set(ref(database, `salas/${state.salaId}/mesa_jogo`), dadosMesa);
+            } else {
+                mostrarAlertaSeringal("Carteador", "O Dono da Mesa está embaralhando as cartas. Aguarde...");
+            }
+            window.ouvirMesaJogoOnline();
+        };
+
+        window.ouvirMesaJogoOnline = function() {
+            onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
+                if (!snapshot.exists()) return;
+                const mesa = snapshot.val();
+                const meuUid = auth.currentUser.uid;
+
+                fecharAlertaSeringal(); 
+
+                state.deck = mesa.baralho || [];
+                state.vira = mesa.vira;
+                state.trumpSuit = mesa.trunfo;
+                state.pHand = mesa.maos[meuUid] || [];
+                
+                const inimigoUid = state.ordemTurnos.find(uid => uid !== meuUid);
+                state.eHand = mesa.maos[inimigoUid] || [];
+
+                state.pTurn = (mesa.estado.turnoAtual === meuUid);
+                state.canPlay = state.pTurn;
+
+                document.getElementById('ui-vira').classList.remove('hidden');
+                document.getElementById('ui-monte').classList.remove('hidden');
+                
+                const uiVira = document.getElementById('ui-vira');
+                uiVira.innerHTML = '';
+                uiVira.appendChild(createCardUI(state.vira));
+
+                const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
+                document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
+                document.getElementById('trump-indicator').classList.remove('hidden');
+
+                updateArenaUI();
+            });
+        };
+</script>
+
 
         </div> </div> <div class="hidden lg:flex flex-col w-[320px] h-[90vh] max-h-[850px] bg-[#2a0808] border-2 border-[#22c55e] rounded-2xl ml-8 p-6 shadow-[0_0_25px_rgba(34,197,94,0.15)]">
         <h2 class="text-[#ef4444] font-cinzel font-black text-xl text-center mb-6 tracking-[2px] uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)]">
