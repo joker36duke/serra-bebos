@@ -2605,7 +2605,7 @@ function confirmGuardian() {
             window.ouvirMesaJogoOnline();
         };
 
-        window.ouvirMesaJogoOnline = function() {
+                window.ouvirMesaJogoOnline = function() {
             onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
                 if (!snapshot.exists()) return;
                 const mesa = snapshot.val();
@@ -2638,17 +2638,39 @@ function confirmGuardian() {
                     state.canPlay = false;
                 }
 
-                // Renderiza a carta que o Inimigo jogou (aparece na sua tela!)
+                // ==========================================
+                // 🌐 SINCRONIZAÇÃO PERFEITA DAS CARTAS NA MESA
+                // ==========================================
+                const playedP = document.getElementById('played-p');
                 const playedE = document.getElementById('played-e');
-                if (state.eCard && playedE.innerHTML === '') {
-                    playedE.style.zIndex = state.pCard ? "10" : "20";
-                    const cUI = createCardUI(state.eCard);
-                    cUI.classList.add('played-card');
-                    playedE.appendChild(cUI);
-                } else if (!state.eCard) {
-                    playedE.innerHTML = '';
-                    document.getElementById('played-p').innerHTML = ''; // Limpa a mesa no início do turno
+
+                // Desenha a SUA carta se ela existir no Firebase
+                if (state.pCard) {
+                    if (playedP.innerHTML === '') {
+                        playedP.style.zIndex = state.eCard ? "20" : "10";
+                        const cUI = createCardUI(state.pCard);
+                        cUI.classList.add('played-card');
+                        playedP.appendChild(cUI);
+                    }
+                } else {
+                    playedP.innerHTML = '';
+                    playedP.style = '';
                 }
+
+                // Desenha a carta do ADVERSÁRIO se ela existir no Firebase
+                if (state.eCard) {
+                    if (playedE.innerHTML === '') {
+                        playedE.style.zIndex = state.pCard ? "10" : "20";
+                        const cUI = createCardUI(state.eCard);
+                        cUI.classList.add('played-card');
+                        playedE.appendChild(cUI); // 👉 CORRIGIDO: Agora joga no container certo!
+                    }
+                } else {
+                    playedE.innerHTML = '';
+                    playedE.style = '';
+                }
+
+                // ==========================================
 
                 document.getElementById('ui-vira').classList.remove('hidden');
                 document.getElementById('ui-monte').classList.remove('hidden');
