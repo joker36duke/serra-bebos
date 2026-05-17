@@ -2694,7 +2694,7 @@ function confirmGuardian() {
      // ========================================================
         // O JUIZ ONLINE: RESOLVE A VAZA E ATUALIZA
     // ========================================================
-        window.resolveTrickOnline = async function(mesa, meuUid, inimigoUid) {
+                window.resolveTrickOnline = async function(mesa, meuUid, inimigoUid) {
             const euLiderei = (state.liderAtual === meuUid);
             
             const winner = determineTrickWinner(
@@ -2731,8 +2731,12 @@ function confirmGuardian() {
             trickMsg.classList.remove('hidden');
 
             setTimeout(async () => {
+                // LIMPEZA CIRÚRGICA DA MESA
                 document.getElementById('played-p').style = ''; 
                 document.getElementById('played-e').style = ''; 
+                document.getElementById('played-p').innerHTML = ''; 
+                document.getElementById('played-e').innerHTML = ''; 
+
                 trickMsg.classList.add('hidden');
                 document.getElementById('bisca-alert').classList.add('hidden');
                 
@@ -2742,9 +2746,11 @@ function confirmGuardian() {
                 if (state.isDono) {
                     const ganhadorDaVazaUid = (winner === 'p') ? meuUid : inimigoUid;
                     
-                    let novoBaralho = mesa.baralho || [];
-                    let maoDono = mesa.maos[meuUid] || [];
-                    let maoSerra = mesa.maos[inimigoUid] || [];
+                    // CORREÇÃO: Força conversão de Objetos para Arrays puros
+                    let novoBaralho = Array.isArray(mesa.baralho) ? mesa.baralho : Object.keys(mesa.baralho || {}).map(k => mesa.baralho[k]);
+                    let maoDono = Array.isArray(mesa.maos[meuUid]) ? mesa.maos[meuUid] : Object.keys(mesa.maos[meuUid] || {}).map(k => mesa.maos[meuUid][k]);
+                    let maoSerra = Array.isArray(mesa.maos[inimigoUid]) ? mesa.maos[inimigoUid] : Object.keys(mesa.maos[inimigoUid] || {}).map(k => mesa.maos[inimigoUid][k]);
+                    
                     let pontosDono = mesa.estado.pontos[meuUid] || 0;
                     let pontosSerra = mesa.estado.pontos[inimigoUid] || 0;
 
