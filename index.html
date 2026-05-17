@@ -1360,68 +1360,6 @@
             }
         }
 
-        function playPlayerCard(index) {
-            if (!state.canPlay || !state.pHand[index]) return;
-
-            // Regra da Trunfada: Obrigatório responder com Trunfo/Bebo se tiver
-            if (state.deck.length === 0 && !state.pTurn && state.eCard && isTrumpOrBebo(state.eCard)) {
-                const hasTrumpOrBebo = state.pHand.some(isTrumpOrBebo);
-                if (hasTrumpOrBebo && !isTrumpOrBebo(state.pHand[index])) {
-                    // Feedback visual de bloqueio
-                    const cUI = document.getElementById('ui-hand').children[index];
-                    cUI.classList.remove('invalid-shake');
-                    void cUI.offsetWidth; // Trigger reflow
-                    cUI.classList.add('invalid-shake');
-                    
-                                        const trunfadaUi = document.getElementById('trunfada-ui');
-                    const trunfadaText = document.getElementById('trunfada-text');
-                    
-                    trunfadaText.innerHTML = "OBRIGATÓRIO<br>JOGAR<br>TRUNFO!";
-                    trunfadaUi.classList.add('trunfada-alert');
-                    
-                    setTimeout(() => {
-                        trunfadaUi.classList.remove('trunfada-alert');
-                        trunfadaText.innerHTML = "TRUNFADA<br>ATIVA";
-                    }, 1500);
-                    
-                    return; // Impede a jogada
-                }
-            }
-
-            state.canPlay = false;
-            
-            state.pCard = state.pHand.splice(index, 1)[0];
-            
-            // Regra: Bisca na Roda (Primeira vaza da primeira rodada 1/3)
-            const activeSerraScore = state.isDono ? state.eSerraScore : state.pSerraScore;
-            if (!state.eCard && state.isFirstTrick && activeSerraScore === 1) {
-                if (state.pCard.rank === '7' || state.pCard.rank === 'A') {
-                    state.isBiscaNaRodaActive = true;
-                    document.getElementById('bisca-alert').classList.remove('hidden');
-                }
-            }
-            
-            const playedArea = document.getElementById('played-p');
-            playedArea.innerHTML = '';
-
-            // Se o inimigo já jogou (state.eCard existe), a sua carta cai por cima (z-index 20).
-playedArea.style.zIndex = state.eCard ? "20" : "10";
-            
-            const cUI = createCardUI(state.pCard);
-            cUI.classList.add('played-card');
-            playedArea.appendChild(cUI);
-            
-            updateArenaUI();
-
-            if (!state.pTurn) {
-                // Jogador respondeu, resolver vaza
-                setTimeout(resolveTrick, 800);
-            } else {
-                // Jogador liderou, turno do inimigo
-                setTimeout(enemyPlay, 1000);
-            }
-        }
-
         function enemyPlay() {
             if (state.eHand.length === 0) return;
             
