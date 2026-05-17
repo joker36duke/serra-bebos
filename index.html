@@ -2607,89 +2607,95 @@ function confirmGuardian() {
             }
             window.ouvirMesaJogoOnline();
         };
+                
+window.ouvirMesaJogoOnline = function() {
+    onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
+        if (!snapshot.exists()) return;
+        const mesa = snapshot.val();
+        const meuUid = auth.currentUser.uid;
+        const inimigoUid = state.ordemTurnos.find(uid => uid !== meuUid);
 
-                window.ouvirMesaJogoOnline = function() {
-            onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
-                if (!snapshot.exists()) return;
-                const mesa = snapshot.val();
-                const meuUid = auth.currentUser.uid;
-                const inimigoUid = state.ordemTurnos.find(uid => uid !== meuUid);
+        fecharAlertaSeringal(); 
 
-                fecharAlertaSeringal(); 
+        // 🛡️ BLINDAGEM DO MONTE E DAS MÃOS: Converte objetos do Firebase em listas puras (Arrays)
+        // Isso resolve em 100% o problema do monte parar de repor as cartas!
+        state.deck = Array.isArray(mesa.baralho) ? mesa.baralho : Object.keys(mesa.baralho || {}).map(k => mesa.baralho[k]);
+        state.pHand = Array.isArray(mesa.maos[meuUid]) ? mesa.maos[meuUid] : Object.keys(mesa.maos[meuUid] || {}).map(k => mesa.maos[meuUid][k]);
+        state.eHand = Array.isArray(mesa.maos[inimigoUid]) ? mesa.maos[inimigoUid] : Object.keys(mesa.maos[inimigoUid] || {}).map(k => mesa.maos[inimigoUid][k]);
 
-                state.deck = mesa.baralho || [];
-                state.vira = mesa.vira;
-                state.trumpSuit = mesa.trunfo;
-                state.pHand = mesa.maos[meuUid] || [];
-                state.eHand = mesa.maos[inimigoUid] || [];
+        state.vira = mesa.vira;
+        state.trumpSuit = mesa.trunfo;
 
-                // Puxa pontos atualizados e quem foi o líder da vaza
-                state.liderAtual = mesa.estado.liderAtual;
-                state.pScore = mesa.estado.pontos[meuUid] || 0;
-                state.eScore = mesa.estado.pontos[inimigoUid] || 0;
+        // Puxa pontos atualizados e quem foi o líder da vaza
+        state.liderAtual = mesa.estado.liderAtual;
+        state.pScore = mesa.estado.pontos[meuUid] || 0;
+        state.eScore = mesa.estado.pontos[inimigoUid] || 0;
 
-                // Cartas na mesa
-                const jogadas = mesa.estado.cartasJogadas || {};
-                state.pCard = jogadas[meuUid] || null;
-                state.eCard = jogadas[inimigoUid] || null;
+        // Cartas na mesa
+        const jogadas = mesa.estado.cartasJogadas || {};
+        state.pCard = jogadas[meuUid] || null;
+        state.eCard = jogadas[inimigoUid] || null;
 
-                // Define Turno se o jogador ainda não lançou carta
-                if (!state.pCard) {
-                    state.pTurn = (mesa.estado.turnoAtual === meuUid);
-                    state.canPlay = state.pTurn;
-                } else {
-                    state.canPlay = false;
-                }
+        // Define Turno se o jogador ainda não lançou carta
+        if (!state.pCard) {
+            state.pTurn = (mesa.estado.turnoAtual === meuUid);
+            state.canPlay = state.pTurn;
+        } else {
+            state.canPlay = false;
+        }
 
-                // ==========================================
-                // 🌐 SINCRONIZAÇÃO PERFEITA DAS CARTAS NA MESA
-                // ==========================================
-                const playedP = document.getElementById('played-p');
-                const playedE = document.getElementById('played-e');
+        // ==========================================
+        // 🌐 SINCRONIZAÇÃO PERFEITA DAS CARTAS NA MESA
+        // ==========================================
+        const playedP = document.getElementById('played-p');
+        const playedE = document.getElementById('played-e');
 
-                // Desenha a SUA carta se ela existir no Firebase
-                if (state.pCard) {
-                    if (playedP.innerHTML === '') {
-                        playedP.style.zIndex = state.eCard ? "20" : "10";
-                        const cUI = createCardUI(state.pCard);
-                        cUI.classList.add('played-card');
-                        playedP.appendChild(cUI);
-                    }
-                } else {
-                    playedP.innerHTML = '';
-                    playedP.style = '';
-                }
+        // Desenha a SUA carta se ela existir no Firebase
+        if (state.pCard) {
+            if (playedP.children.length === 0) {
+                playedP.style.zIndex = state.eCard ? "20" : "10";
+                const cUI = (window.createCardUI || createCardUI)(state.pCard);
+                cUI.classList.add('played-card');
+                playedP.appendChild(cUI);
+            }
+        } else {
+            playedP.innerHTML = '';
+            playedP.style = '';
+        }
 
-                // Desenha a carta do ADVERSÁRIO se ela existir no Firebase
-                if (state.eCard) {
-                    if (playedE.innerHTML === '') {
-                        playedE.style.zIndex = state.pCard ? "10" : "20";
-                        const cUI = createCardUI(state.eCard);
-                        cUI.classList.add('played-card');
-                        playedE.appendChild(cUI); // 👉 CORRIGIDO: Agora joga no container certo!
-                    }
-                } else {
-                    playedE.innerHTML = '';
-                    playedE.style = '';
-                }
+        // Desenha a carta do ADVERSÁRIO se ela existir no Firebase
+        // Mudamos para 'children.length === 0' para evitar repetições visuais e falhas no Android
+        if (state.eCard) {
+            if (playedE.children.length === 0) { 
+                playedE.innerHTML = '';
+                playedE.style.zIndex = state.pCard ? "10" : "20";
+                const cUI = (window.createCardUI || createCardUI)(state.eCard);
+                cUI.classList.add('played-card');
+                playedE.appendChild(cUI); 
+            }
+        } else {
+            playedE.innerHTML = '';
+            playedE.style = '';
+        }
 
-                // ==========================================
+        // ==========================================
 
-                document.getElementById('ui-vira').classList.remove('hidden');
-                document.getElementById('ui-monte').classList.remove('hidden');
-                const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
-                document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
-                document.getElementById('trump-indicator').classList.remove('hidden');
+        document.getElementById('ui-vira').classList.remove('hidden');
+        document.getElementById('ui-monte').classList.remove('hidden');
+        const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
+        document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
+        document.getElementById('trump-indicator').classList.remove('hidden');
 
-                window.updateArenaUI();
+        window.updateArenaUI();
 
-                // SE OS DOIS JOGARAM, RESOLVE O DUELO!
-                if (state.pCard && state.eCard && !state.resolvendoVaza) {
-                    state.resolvendoVaza = true;
-                    setTimeout(() => window.resolveTrickOnline(mesa, meuUid, inimigoUid), 800);
-                }
-            });
-        };
+        // SE OS DOIS JOGARAM, RESOLVE O DUELO!
+        if (state.pCard && state.eCard && !state.resolvendoVaza) {
+            state.resolvendoVaza = true;
+            setTimeout(() => window.resolveTrickOnline(mesa, meuUid, inimigoUid), 800);
+        }
+    });
+};
+
 
      // ========================================================
         // O JUIZ ONLINE: RESOLVE A VAZA E ATUALIZA
