@@ -2073,7 +2073,7 @@ function confirmGuardian() {
         // MOTOR UNIVERSAL SERRA BEBOS: O DEFINITIVO
         // =========================================================
 
-        window.buscarPartida = async function(tipoJogo) {
+                window.buscarPartida = async function(tipoJogo) {
             try {
                 state.tipoJogo = tipoJogo; // GRAVA O MODO DE JOGO
                 const user = auth.currentUser;
@@ -2166,13 +2166,15 @@ function confirmGuardian() {
             return cartas;
         };
 
-                // 4. OUVIR A SALA (CORRIGIDO COM BLINDAGEM ANTI-FIREBASE)
+        // 4. OUVIR A SALA (CORRIGIDO COM BLINDAGEM ANTI-FIREBASE PARA O ANDROID)
         window.ouvirEventosSala = function(idSala) {
             onValue(ref(database, `salas/${idSala}`), (snapshot) => {
                 if(!snapshot.exists()) return;
                 const sala = snapshot.val();
                 const status = sala.config.status;
-                const cartas = sala.mesa_sorteio;
+                
+                // Trava de segurança para caso as cartas não carreguem a tempo
+                const cartas = sala.mesa_sorteio || {};
                 
                 if (status === 'sorteio' && document.getElementById('screen-luck').classList.contains('hidden')) {
                     fecharAlertaSeringal();
@@ -2182,8 +2184,9 @@ function confirmGuardian() {
                 if (status === 'sorteio') {
                     window.renderizarMesaSorteioOnline(cartas);
                     
-                    // O SEGREDO ESTÁ AQUI: Ignora as cartas vazias ou apagadas pelo Firebase
-                    const escolhidas = Object.values(cartas).filter(c => c.escolhidaPor && c.escolhidaPor !== "");
+                    // O SEGREDO ESTÁ AQUI: Object.keys garante 100% de compatibilidade em celulares
+                    const arrayCartas = Object.keys(cartas).map(key => cartas[key]);
+                    const escolhidas = arrayCartas.filter(c => c && c.escolhidaPor && c.escolhidaPor !== "");
                     
                     if (escolhidas.length === sala.config.maxJogadores) {
                         setTimeout(() => window.finalizarSorteioMultiplayer(cartas, sala.jogadores), 1800);
