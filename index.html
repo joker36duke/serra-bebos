@@ -1576,6 +1576,18 @@ playedArea.style.zIndex = state.pCard ? "20" : "10";
         
             // --- FINALIZAÇÃO ---
         function endRound(forcedWinner = null) {
+            
+            // 🛑 TRAVA DE EMPATE: Se der 60 a 60, repete sem mexer nas Serras
+            if (state.pScore === 60 && state.eScore === 60) {
+                showModal(
+                    "EMPATE NA MESA!", 
+                    "A rodada terminou em 60 a 60. No Seringal, o empate anula a vaza e as cartas devem ser redistribuídas!", 
+                    "Repetir Rodada", 
+                    state.isOnline ? window.startSeringalGameOnline : startSeringalGame
+                );
+                return; // Corta o código aqui para não avançar de 1/3 para 2/3
+            }
+
             let pWon = forcedWinner === 'p' ? true : state.pScore > state.eScore;
             
             // Textos Dinâmicos usando o player_name
