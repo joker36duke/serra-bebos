@@ -1225,12 +1225,26 @@
             }
         }
 
-        // --- ATUALIZAÇÃO DA UI DA MESA ---
-        function updateArenaUI() {
+                // --- ATUALIZAÇÃO DA UI DA MESA (VERSÃO COMPLETA E ONLINE) ---
+        window.updateArenaUI = function() {
             // Pontuações
             document.getElementById('score-p').innerText = state.pScore;
             document.getElementById('score-e').innerText = state.eScore;
-            document.getElementById('ui-player-name').innerText = player_name.toUpperCase() + ":";
+
+            // 👉 NOME DO JOGADOR (PUXA DO FIREBASE)
+            let meuNome = "GUARDIÃO";
+            if (typeof auth !== 'undefined' && auth.currentUser && auth.currentUser.displayName) {
+                meuNome = auth.currentUser.displayName.split(' ')[0]; // Pega só o primeiro nome
+            } else if (typeof player_name !== 'undefined') {
+                meuNome = player_name;
+            }
+            document.getElementById('ui-player-name').innerText = meuNome.toUpperCase() + ":";
+
+            // 👉 NOME DO INIMIGO (TIRA O PIRARUCOG E BOTA O ADVERSÁRIO REAL)
+            const enemyScoreElem = document.getElementById('score-e');
+            if (enemyScoreElem && enemyScoreElem.nextElementSibling) {
+                enemyScoreElem.nextElementSibling.innerText = (state.enemyName || "ADVERSÁRIO").toUpperCase() + ":";
+            }
 
             // Atualiza quem é Dono e quem é Serra
             document.getElementById('ui-role-p').innerText = state.isDono ? "DONO DA MESA" : "NO SERRA";
@@ -1247,9 +1261,10 @@
                 document.getElementById('serras-p').innerText = `${state.pSerraScore}/3`;
             }
 
-            // Contador do deck e Vira
+            // Contador do deck e Vira / Lógica da Trunfada
             const countUI = document.getElementById('deck-count-ui');
-            countUI.innerText = state.deck.length;
+            if (countUI) countUI.innerText = state.deck.length;
+            
             if (state.deck.length === 0) {
                 document.getElementById('ui-monte').classList.add('hidden');
                 document.getElementById('ui-vira').classList.add('hidden');
@@ -1257,50 +1272,65 @@
                 document.getElementById('trunfada-ui').classList.remove('hidden');
             } else {
                 document.getElementById('trunfada-ui').classList.add('hidden');
+                // Garante que o vira aparece (se existir)
+                const uiVira = document.getElementById('ui-vira');
+                if (uiVira && state.vira) {
+                    uiVira.innerHTML = '';
+                    uiVira.appendChild(createCardUI(state.vira));
+                }
             }
 
-            // Mão do Jogador
+            // Mão do Jogador (COM AS CARTAS VINDAS DA INTERNET)
             const uiHand = document.getElementById('ui-hand');
-            uiHand.innerHTML = '';
-            state.pHand.forEach((card, i) => {
-                const cUI = createCardUI(card, false, () => playPlayerCard(i));
-                if (!state.canPlay) {
-                    cUI.classList.add('card-disabled');
+            if (uiHand) {
+                uiHand.innerHTML = '';
+                if (state.pHand && state.pHand.length > 0) {
+                    state.pHand.forEach((card, i) => {
+                        const cUI = createCardUI(card, false, () => window.playPlayerCard(i));
+                        if (!state.canPlay) {
+                            cUI.classList.add('card-disabled');
+                        }
+                        uiHand.appendChild(cUI);
+                    });
                 }
-                uiHand.appendChild(cUI);
-            });
+            }
 
             // Mão do Inimigo (Verso)
             const eHandUI = document.getElementById('enemy-hand-table');
-            eHandUI.innerHTML = '';
-            state.eHand.forEach(() => {
-                eHandUI.appendChild(createCardUI(null, true));
-            });
+            if (eHandUI) {
+                eHandUI.innerHTML = '';
+                if (state.eHand && state.eHand.length > 0) {
+                    state.eHand.forEach(() => {
+                        eHandUI.appendChild(createCardUI(null, true));
+                    });
+                }
+            }
             
             // Atualizar o botão Papô (Abertura do Modo de Troca)
             const btnPopo = document.getElementById('btn-popo');
-            if (state.deck.length > 0 && !state.pPopoUsed) {
-                const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
-                const reqSuit = state.trumpSuit;
-                const hasPopoCard = state.pHand.some(c => c.rank === reqRank && c.suit === reqSuit);
-                
-                if (hasPopoCard && state.canPlay) {
-                    btnPopo.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
-                    btnPopo.style.display = 'block';
-btnPopo.innerText = "TROCAR";
-btnPopo.style.backgroundColor = 'var(--wine)';
-btnPopo.classList.add('animate-pulse');
-
+            if (btnPopo) {
+                if (state.deck.length > 0 && !state.pPopoUsed) {
+                    const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
+                    const reqSuit = state.trumpSuit;
+                    const hasPopoCard = state.pHand && state.pHand.some(c => c.rank === reqRank && c.suit === reqSuit);
+                    
+                    if (hasPopoCard && state.canPlay) {
+                        btnPopo.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
+                        btnPopo.style.display = 'block';
+                        btnPopo.innerText = "TROCAR";
+                        btnPopo.style.backgroundColor = 'var(--wine)';
+                        btnPopo.classList.add('animate-pulse');
+                    } else {
+                        btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
+                        btnPopo.classList.remove('animate-pulse');
+                        btnPopo.style.display = 'none';
+                    }
                 } else {
                     btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
-                    btnPopo.classList.remove('animate-pulse');
                     btnPopo.style.display = 'none';
                 }
-            } else {
-                btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
-                btnPopo.style.display = 'none';
             }
-        }
+        };
 
         // --- MECÂNICA DE JOGO ---
         function executarPopo() {
