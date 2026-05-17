@@ -2408,7 +2408,7 @@ function confirmGuardian() {
         };
 
         // ========================================================
-        // O CARTEADOR ONLINE E ROTEADOR DE ARENAS
+            // O CARTEADOR ONLINE E ROTEADOR DE ARENAS
         // =========================================================
 
         window.irParaMesa = function() {
@@ -2420,9 +2420,9 @@ function confirmGuardian() {
             // ROTEADOR: Qual imagem de mesa puxar?
             if (state.tipoJogo === '2v2' || state.tipoJogo === '3v3') {
                 mesaMadeira.style.backgroundImage = "url('arena_multiplayer.png')";
-                if (battleMsg) battleMsg.classList.add('hidden'); // Esconde o logo gigante para caber as caixas de nome
+                if (battleMsg) battleMsg.classList.add('hidden'); // Esconde o logo para caber as caixas
             } else {
-                // Aqui a mágica: puxa a imagem do adversário usando o nome dele!
+                // Puxa a imagem do adversário usando o nome dele!
                 const imagemAdversario = getImagemArena(state.enemyName);
                 mesaMadeira.style.backgroundImage = `url('${imagemAdversario}')`;
                 if (battleMsg) battleMsg.classList.remove('hidden');
@@ -2432,6 +2432,112 @@ function confirmGuardian() {
                 navTo('screen-result', 'screen-battle', window.startSeringalGameOnline);
             } else {
                 navTo('screen-result', 'screen-battle', startSeringalGame); 
+            }
+        };
+
+        // --- ATUALIZAÇÃO DA UI DA MESA (VERSÃO COMPLETA E ONLINE) ---
+        window.updateArenaUI = function() {
+            // Pontuações
+            document.getElementById('score-p').innerText = state.pScore;
+            document.getElementById('score-e').innerText = state.eScore;
+
+            // 👉 NOME DO JOGADOR (PUXA DO FIREBASE)
+            let meuNome = "GUARDIÃO";
+            if (typeof auth !== 'undefined' && auth.currentUser && auth.currentUser.displayName) {
+                meuNome = auth.currentUser.displayName.split(' ')[0]; 
+            } else if (typeof player_name !== 'undefined') {
+                meuNome = player_name;
+            }
+            document.getElementById('ui-player-name').innerText = meuNome.toUpperCase() + ":";
+
+            // 👉 NOME DO INIMIGO (TIRA O PIRARUCOG E BOTA O ADVERSÁRIO REAL)
+            const enemyScoreElem = document.getElementById('score-e');
+            if (enemyScoreElem && enemyScoreElem.nextElementSibling) {
+                enemyScoreElem.nextElementSibling.innerText = (state.enemyName || "ADVERSÁRIO").toUpperCase() + ":";
+            }
+
+            // Atualiza quem é Dono e quem é Serra
+            document.getElementById('ui-role-p').innerText = state.isDono ? "DONO DA MESA" : "NO SERRA";
+            document.getElementById('ui-role-e').innerText = !state.isDono ? "DONO DA MESA" : "NO SERRA";
+
+            // Placar de Serras
+            if (state.isDono) {
+                document.getElementById('serras-container-p').classList.add('hidden');
+                document.getElementById('serras-container-e').classList.remove('hidden');
+                document.getElementById('serras-e').innerText = `${state.eSerraScore}/3`;
+            } else {
+                document.getElementById('serras-container-e').classList.add('hidden');
+                document.getElementById('serras-container-p').classList.remove('hidden');
+                document.getElementById('serras-p').innerText = `${state.pSerraScore}/3`;
+            }
+
+            // Contador do deck e Vira / Lógica da Trunfada
+            const countUI = document.getElementById('deck-count-ui');
+            if (countUI) countUI.innerText = state.deck.length;
+            
+            if (state.deck.length === 0) {
+                document.getElementById('ui-monte').classList.add('hidden');
+                document.getElementById('ui-vira').classList.add('hidden');
+                document.getElementById('trump-indicator').classList.add('hidden');
+                document.getElementById('trunfada-ui').classList.remove('hidden');
+            } else {
+                document.getElementById('trunfada-ui').classList.add('hidden');
+                const uiVira = document.getElementById('ui-vira');
+                if (uiVira && state.vira) {
+                    uiVira.innerHTML = '';
+                    uiVira.appendChild(createCardUI(state.vira));
+                }
+            }
+
+            // Mão do Jogador (COM AS CARTAS VINDAS DA INTERNET)
+            const uiHand = document.getElementById('ui-hand');
+            if (uiHand) {
+                uiHand.innerHTML = '';
+                if (state.pHand && state.pHand.length > 0) {
+                    state.pHand.forEach((card, i) => {
+                        const cUI = createCardUI(card, false, () => window.playPlayerCard(i));
+                        if (!state.canPlay) {
+                            cUI.classList.add('card-disabled');
+                        }
+                        uiHand.appendChild(cUI);
+                    });
+                }
+            }
+
+            // Mão do Inimigo (Verso)
+            const eHandUI = document.getElementById('enemy-hand-table');
+            if (eHandUI) {
+                eHandUI.innerHTML = '';
+                if (state.eHand && state.eHand.length > 0) {
+                    state.eHand.forEach(() => {
+                        eHandUI.appendChild(createCardUI(null, true));
+                    });
+                }
+            }
+            
+            // Atualizar o botão Papô
+            const btnPopo = document.getElementById('btn-popo');
+            if (btnPopo) {
+                if (state.deck.length > 0 && !state.pPopoUsed) {
+                    const reqRank = state.trumpSuit === 'Paus' ? '4' : '3';
+                    const reqSuit = state.trumpSuit;
+                    const hasPopoCard = state.pHand && state.pHand.some(c => c.rank === reqRank && c.suit === reqSuit);
+                    
+                    if (hasPopoCard && state.canPlay) {
+                        btnPopo.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
+                        btnPopo.style.display = 'block';
+                        btnPopo.innerText = "TROCAR";
+                        btnPopo.style.backgroundColor = 'var(--wine)';
+                        btnPopo.classList.add('animate-pulse');
+                    } else {
+                        btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
+                        btnPopo.classList.remove('animate-pulse');
+                        btnPopo.style.display = 'none';
+                    }
+                } else {
+                    btnPopo.classList.add('hidden', 'opacity-50', 'pointer-events-none');
+                    btnPopo.style.display = 'none';
+                }
             }
         };
 
@@ -2458,12 +2564,10 @@ function confirmGuardian() {
                     baralho: novoBaralho,
                     vira: cartaVira,
                     trunfo: cartaVira.suit,
-                    maos: {
-                        [uidSerra]: maoSerra,
-                        [uidDono]: maoDono
-                    },
+                    maos: { [uidSerra]: maoSerra, [uidDono]: maoDono },
                     estado: {
                         turnoAtual: uidSerra, 
+                        liderAtual: uidSerra, // Define quem joga a primeira da rodada
                         cartasJogadas: {}, 
                         pontos: { [uidSerra]: 0, [uidDono]: 0 }
                     }
@@ -2475,68 +2579,12 @@ function confirmGuardian() {
             window.ouvirMesaJogoOnline();
         };
 
-        // UI DA ARENA: CORRIGE O BUG DAS CARTAS INVISÍVEIS NA MÃO
-        window.updateArenaUI = function() {
-            document.getElementById('score-p').innerText = state.pScore;
-            document.getElementById('score-e').innerText = state.eScore;
-            
-            let meuNome = "GUARDIÃO";
-            if (auth.currentUser && auth.currentUser.displayName) {
-                meuNome = auth.currentUser.displayName.split(' ')[0]; // Pega só o primeiro nome
-            }
-            document.getElementById('ui-player-name').innerText = meuNome.toUpperCase() + ":";
-
-            document.getElementById('ui-role-p').innerText = state.isDono ? "DONO DA MESA" : "NO SERRA";
-            document.getElementById('ui-role-e').innerText = !state.isDono ? "DONO DA MESA" : "NO SERRA";
-
-            if (state.isDono) {
-                document.getElementById('serras-container-p').classList.add('hidden');
-                document.getElementById('serras-container-e').classList.remove('hidden');
-                document.getElementById('serras-e').innerText = `${state.eSerraScore}/3`;
-            } else {
-                document.getElementById('serras-container-e').classList.add('hidden');
-                document.getElementById('serras-container-p').classList.remove('hidden');
-                document.getElementById('serras-p').innerText = `${state.pSerraScore}/3`;
-            }
-
-            const countUI = document.getElementById('deck-count-ui');
-            if (countUI) countUI.innerText = state.deck.length;
-            
-            const uiVira = document.getElementById('ui-vira');
-            if (uiVira && state.vira) {
-                uiVira.innerHTML = '';
-                uiVira.appendChild(createCardUI(state.vira));
-            }
-
-            // 👉 A CORREÇÃO DA IMAGEM 3: DESENHA AS CARTAS NA MÃO 👈
-            const uiHand = document.getElementById('ui-hand');
-            if (uiHand) {
-                uiHand.innerHTML = ''; 
-                if (state.pHand && state.pHand.length > 0) {
-                    state.pHand.forEach((card, i) => {
-                        const cUI = createCardUI(card, false, () => playPlayerCard(i));
-                        if (!state.canPlay) cUI.classList.add('card-disabled');
-                        uiHand.appendChild(cUI);
-                    });
-                }
-            }
-
-            const eHandUI = document.getElementById('enemy-hand-table');
-            if (eHandUI) {
-                eHandUI.innerHTML = '';
-                if (state.eHand && state.eHand.length > 0) {
-                    state.eHand.forEach(() => {
-                        eHandUI.appendChild(createCardUI(null, true));
-                    });
-                }
-            }
-        };
-
         window.ouvirMesaJogoOnline = function() {
             onValue(ref(database, `salas/${state.salaId}/mesa_jogo`), (snapshot) => {
                 if (!snapshot.exists()) return;
                 const mesa = snapshot.val();
                 const meuUid = auth.currentUser.uid;
+                const inimigoUid = state.ordemTurnos.find(uid => uid !== meuUid);
 
                 fecharAlertaSeringal(); 
 
@@ -2544,30 +2592,149 @@ function confirmGuardian() {
                 state.vira = mesa.vira;
                 state.trumpSuit = mesa.trunfo;
                 state.pHand = mesa.maos[meuUid] || [];
-                
-                const inimigoUid = state.ordemTurnos.find(uid => uid !== meuUid);
                 state.eHand = mesa.maos[inimigoUid] || [];
 
-                state.pTurn = (mesa.estado.turnoAtual === meuUid);
-                state.canPlay = state.pTurn;
+                // Puxa pontos atualizados e quem foi o líder da vaza
+                state.liderAtual = mesa.estado.liderAtual;
+                state.pScore = mesa.estado.pontos[meuUid] || 0;
+                state.eScore = mesa.estado.pontos[inimigoUid] || 0;
+
+                // Cartas na mesa
+                const jogadas = mesa.estado.cartasJogadas || {};
+                state.pCard = jogadas[meuUid] || null;
+                state.eCard = jogadas[inimigoUid] || null;
+
+                // Define Turno se o jogador ainda não lançou carta
+                if (!state.pCard) {
+                    state.pTurn = (mesa.estado.turnoAtual === meuUid);
+                    state.canPlay = state.pTurn;
+                } else {
+                    state.canPlay = false;
+                }
+
+                // Renderiza a carta que o Inimigo jogou (aparece na sua tela!)
+                const playedE = document.getElementById('played-e');
+                if (state.eCard && playedE.innerHTML === '') {
+                    playedE.style.zIndex = state.pCard ? "10" : "20";
+                    const cUI = createCardUI(state.eCard);
+                    cUI.classList.add('played-card');
+                    playedE.appendChild(cUI);
+                } else if (!state.eCard) {
+                    playedE.innerHTML = '';
+                    document.getElementById('played-p').innerHTML = ''; // Limpa a mesa no início do turno
+                }
 
                 document.getElementById('ui-vira').classList.remove('hidden');
                 document.getElementById('ui-monte').classList.remove('hidden');
-                
-                const uiVira = document.getElementById('ui-vira');
-                if (uiVira && state.vira) {
-                    uiVira.innerHTML = '';
-                    uiVira.appendChild(createCardUI(state.vira));
-                }
-
                 const popoRank = state.trumpSuit === 'Paus' ? '4' : '3';
                 document.getElementById('trump-indicator').innerText = `PAPÔ: ${popoRank} ${suitIcons[state.trumpSuit]}`;
                 document.getElementById('trump-indicator').classList.remove('hidden');
 
-                // 👉 FORÇA A TELA A ATUALIZAR E MOSTRAR AS CARTAS NA MÃO 👈
                 window.updateArenaUI();
+
+                // SE OS DOIS JOGARAM, RESOLVE O DUELO!
+                if (state.pCard && state.eCard && !state.resolvendoVaza) {
+                    state.resolvendoVaza = true;
+                    setTimeout(() => window.resolveTrickOnline(mesa, meuUid, inimigoUid), 800);
+                }
             });
         };
+
+     // ========================================================
+        // O JUIZ ONLINE: RESOLVE A VAZA E ATUALIZA
+    // ========================================================
+        window.resolveTrickOnline = async function(mesa, meuUid, inimigoUid) {
+            const euLiderei = (state.liderAtual === meuUid);
+            
+            const winner = determineTrickWinner(
+                euLiderei ? state.pCard : state.eCard, 
+                euLiderei ? state.eCard : state.pCard, 
+                euLiderei
+            );
+
+            const trickPts = state.pCard.pts + state.eCard.pts;
+            
+            const wArea = document.getElementById(`played-${winner}`);
+            const lArea = document.getElementById(`played-${winner === 'p' ? 'e' : 'p'}`);
+            const trickMsg = document.getElementById('trick-result-msg');
+
+            wArea.style.zIndex = "50";
+            lArea.style.zIndex = "10";
+
+            if (winner === 'p') {
+                wArea.firstChild.classList.add('card-winner-glow');
+                wArea.style.transform = "scale(1.1) translateY(-20px)";
+                lArea.style.transform = "scale(0.85) translateY(20px)";
+                lArea.style.opacity = "0.6";
+                trickMsg.innerText = trickPts > 0 ? `VOCÊ LEVOU +${trickPts} PONTOS!` : `SUA VAZA!`;
+                trickMsg.className = "absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] text-[#22c55e] texto-vencedor-brilho font-cinzel font-black text-[16px] tracking-[4px] whitespace-nowrap pointer-events-none transition-all duration-300 transform scale-110";
+            } else {
+                wArea.firstChild.classList.add('card-winner-glow');
+                wArea.style.transform = "scale(1.1) translateY(20px)";
+                lArea.style.transform = "scale(0.85) translateY(-20px)";
+                lArea.style.opacity = "0.6";
+                trickMsg.innerText = trickPts > 0 ? `${state.enemyName.toUpperCase()} LEVOU +${trickPts}` : `${state.enemyName.toUpperCase()} LEVOU`;
+                trickMsg.className = "absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] text-[#ef4444] texto-vencedor-brilho font-cinzel font-black text-[16px] tracking-[4px] whitespace-nowrap pointer-events-none transition-all duration-300 transform scale-110";
+            }
+            
+            trickMsg.classList.remove('hidden');
+
+            setTimeout(async () => {
+                document.getElementById('played-p').style = ''; 
+                document.getElementById('played-e').style = ''; 
+                trickMsg.classList.add('hidden');
+                document.getElementById('bisca-alert').classList.add('hidden');
+                
+                state.isFirstTrick = false;
+                state.isBiscaNaRodaActive = false;
+
+                if (state.isDono) {
+                    const ganhadorDaVazaUid = (winner === 'p') ? meuUid : inimigoUid;
+                    
+                    let novoBaralho = mesa.baralho || [];
+                    let maoDono = mesa.maos[meuUid] || [];
+                    let maoSerra = mesa.maos[inimigoUid] || [];
+                    let pontosDono = mesa.estado.pontos[meuUid] || 0;
+                    let pontosSerra = mesa.estado.pontos[inimigoUid] || 0;
+
+                    if (winner === 'p') pontosDono += trickPts;
+                    else pontosSerra += trickPts;
+
+                    if (novoBaralho.length > 0) {
+                        const c1 = novoBaralho.pop();
+                        const c2 = novoBaralho.length > 0 ? novoBaralho.pop() : null;
+                        if (winner === 'p') {
+                            maoDono.push(c1);
+                            if (c2) maoSerra.push(c2);
+                        } else {
+                            maoSerra.push(c1);
+                            if (c2) maoDono.push(c2);
+                        }
+                    }
+
+                    const updates = {
+                        [`salas/${state.salaId}/mesa_jogo/baralho`]: novoBaralho,
+                        [`salas/${state.salaId}/mesa_jogo/maos/${meuUid}`]: maoDono,
+                        [`salas/${state.salaId}/mesa_jogo/maos/${inimigoUid}`]: maoSerra,
+                        [`salas/${state.salaId}/mesa_jogo/estado/pontos/${meuUid}`]: pontosDono,
+                        [`salas/${state.salaId}/mesa_jogo/estado/pontos/${inimigoUid}`]: pontosSerra,
+                        [`salas/${state.salaId}/mesa_jogo/estado/turnoAtual`]: ganhadorDaVazaUid,
+                        [`salas/${state.salaId}/mesa_jogo/estado/liderAtual`]: ganhadorDaVazaUid,
+                        [`salas/${state.salaId}/mesa_jogo/estado/cartasJogadas`]: null
+                    };
+
+                    await update(ref(database), updates);
+                }
+                
+                if (state.pHand.length === 0 && state.eHand.length === 0) {
+                    endRound(); 
+                } else {
+                    state.resolvendoVaza = false;
+                }
+
+            }, 1800);
+        };
+
     </script>
 
 
